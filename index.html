@@ -3,19 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BasketScout Pro - Cloud Sync Ready</title>
+  <title>BasketScout Pro - Complete Definitive Edition</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Identity Services SDK -->
+  <!-- Google Identity Services SDK Ufficiale -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
     body { font-family: 'Inter', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
     .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    /* Scrollbar personalizzata dark */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
   </style>
 </head>
-<body class="bg-[#0b1120] text-slate-100 min-h-screen flex flex-col justify-between">
+<body class="bg-[#0b1120] text-slate-100 min-h-screen flex flex-col justify-between pb-24">
 
   <!-- ================= TOP HEADER BAR ================= -->
   <header class="bg-[#111827] border-b border-slate-800 px-4 py-3 sticky top-0 z-30 shadow-lg">
@@ -29,8 +34,8 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-lg font-black tracking-wider text-white">BASKETSCOUT <span class="text-orange-500">PRO</span></h1>
-            <span class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-mono">v1.3.0</span>
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-mono">v1.4.0</span>
+            <span id="liveStatusBadge" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE
             </span>
           </div>
@@ -38,11 +43,11 @@
         </div>
       </div>
 
-      <!-- Actions: Drive Sync & Export -->
+      <!-- Actions: Drive Sync & Esporta -->
       <div class="flex items-center gap-2">
-        <!-- Google Drive Sync Button (Default State: Offline/Grey) -->
+        <!-- Google Drive Sync Button (Default State: OFFLINE / Grigio) -->
         <button id="btnOpenDriveModal" onclick="openDriveModal()" class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700/80 transition-all text-left shadow-sm">
-          <div id="driveHeaderIconWrap" class="w-7 h-7 rounded-lg bg-slate-700/80 text-slate-400 flex items-center justify-center text-sm transition-colors">
+          <div id="driveHeaderIconWrap" class="w-7 h-7 rounded-lg bg-slate-700/80 text-slate-400 flex items-center justify-center text-sm transition-colors border border-slate-700">
             <i class="fa-brands fa-google-drive"></i>
           </div>
           <div class="hidden md:block leading-tight pr-1">
@@ -55,180 +60,398 @@
         </button>
 
         <!-- Esporta Partita JSON -->
-        <button onclick="exportLocalJson()" class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition shadow">
+        <button onclick="exportLocalJson()" title="Scarica backup JSON" class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition shadow">
           <i class="fa-solid fa-download text-orange-400"></i>
-          <span class="hidden sm:inline">Esporta</span>
+          <span class="hidden sm:inline">JSON</span>
+        </button>
+
+        <!-- Esporta CSV / Referto -->
+        <button onclick="exportStatsCsv()" title="Esporta Statistiche CSV" class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition shadow">
+          <i class="fa-solid fa-file-csv text-emerald-400"></i>
+          <span class="hidden sm:inline">Referto</span>
         </button>
       </div>
 
     </div>
   </header>
 
-  <!-- ================= MAIN SCOUT INTERFACE ================= -->
+  <!-- ================= CONTAINER DELLE 4 SEZIONI PRINCIPALI ================= -->
   <main class="max-w-7xl mx-auto w-full p-3 sm:p-4 md:p-6 flex-1 space-y-4">
-    
-    <!-- Tabellone Punteggio e Quarto -->
-    <section class="bg-[#131d31] border border-slate-800 rounded-2xl p-4 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-      
-      <!-- Quarto / Periodo -->
-      <div class="md:col-span-4 flex flex-col gap-2">
-        <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-slate-400">
-          <span>Periodo di Gioco</span>
-          <button onclick="resetMatch()" class="text-rose-400 hover:text-rose-300 text-[11px] font-normal underline">Azzera Partita</button>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- 1. SEZIONE: ROSTER (Gestione Squadra e Giocatori)             -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="sectionRoster" class="hidden space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-[#131d31] p-4 rounded-2xl border border-slate-800 shadow-xl">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-users text-orange-400"></i> Gestione Roster Atleti
+          </h2>
+          <p class="text-xs text-slate-400">Aggiungi, modifica o convoca i giocatori per la gara in corso.</p>
         </div>
-        <div class="grid grid-cols-5 gap-1.5">
-          <button onclick="setQuarter('1Q')" id="btnQ-1Q" class="py-2 rounded-lg font-bold text-xs bg-orange-600 text-white shadow">1°Q</button>
-          <button onclick="setQuarter('2Q')" id="btnQ-2Q" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">2°Q</button>
-          <button onclick="setQuarter('3Q')" id="btnQ-3Q" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">3°Q</button>
-          <button onclick="setQuarter('4Q')" id="btnQ-4Q" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">4°Q</button>
-          <button onclick="setQuarter('OT')" id="btnQ-OT" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">OT</button>
-        </div>
+        <button onclick="openPlayerModal()" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-orange-950/40 transition">
+          <i class="fa-solid fa-user-plus"></i> Nuovo Giocatore
+        </button>
       </div>
 
-      <!-- Tabellone Casa vs Ospiti -->
-      <div class="md:col-span-8 grid grid-cols-7 gap-2 items-center bg-[#0d1424] p-3 rounded-xl border border-slate-800/80">
-        <!-- Squadra Casa -->
-        <div class="col-span-3 text-center">
-          <span class="text-xs uppercase font-extrabold text-orange-400 tracking-wider">CASA</span>
-          <div id="scoreHome" class="text-4xl sm:text-5xl font-black text-white my-1 font-mono-code">0</div>
-          <div class="flex justify-center gap-1">
-            <button onclick="adjustHomeScore(-1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs">-1</button>
-            <button onclick="adjustHomeScore(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold rounded text-xs">+1</button>
-          </div>
+      <!-- Tabella / Card Giocatori -->
+      <div class="bg-[#131d31] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#0e1626] text-slate-400 uppercase font-bold text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="p-3.5 text-center">Conv.</th>
+                <th class="p-3.5 text-center">Num</th>
+                <th class="p-3.5">Nome e Cognome</th>
+                <th class="p-3.5">Ruolo</th>
+                <th class="p-3.5 text-center">Stato</th>
+                <th class="p-3.5 text-right">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="rosterTableBody" class="divide-y divide-slate-800/80 text-slate-200">
+              <!-- Righe caricate da JS -->
+            </tbody>
+          </table>
         </div>
-
-        <!-- VS Badge -->
-        <div class="col-span-1 text-center font-black text-slate-600 text-sm">
-          VS
-        </div>
-
-        <!-- Squadra Ospiti -->
-        <div class="col-span-3 text-center">
-          <span class="text-xs uppercase font-extrabold text-blue-400 tracking-wider">OSPITI</span>
-          <div id="scoreAway" class="text-4xl sm:text-5xl font-black text-white my-1 font-mono-code">0</div>
-          <div class="flex justify-center gap-1">
-            <button onclick="adjustAwayScore(-1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs">-1</button>
-            <button onclick="adjustAwayScore(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs">+1</button>
-            <button onclick="adjustAwayScore(2)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs">+2</button>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- Barra Atleti Convocati -->
-    <section class="bg-[#131d31] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-      <div class="flex justify-between items-center">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-          <i class="fa-solid fa-users text-orange-400"></i> Seleziona Giocatore Convocato:
-        </h2>
-        <span class="text-[11px] text-slate-400">Tocca un atleta per registrare le azioni</span>
-      </div>
-
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="rosterList">
-        <!-- Renderizzato via JS -->
       </div>
     </section>
 
-    <!-- Tastierino Statistiche Touch Rapido -->
-    <section class="bg-[#131d31] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-4">
-      
-      <!-- Giocatore Attivo Info -->
-      <div class="flex items-center justify-between bg-[#0e1626] border border-slate-700/80 p-3 rounded-xl">
-        <div class="flex items-center gap-3">
-          <div id="activePlayerBadge" class="w-10 h-10 rounded-lg bg-orange-600 text-white font-black flex items-center justify-center text-sm">
-            #--
-          </div>
+    <!-- ------------------------------------------------------------- -->
+    <!-- 2. SEZIONE: PARTITA (Configurazione e Chiusura Match)         -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="sectionPartita" class="hidden space-y-4">
+      <div class="bg-[#131d31] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-5">
+        <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
           <div>
-            <h3 id="activePlayerName" class="font-bold text-sm text-white">Nessun giocatore selezionato</h3>
-            <p id="activePlayerStats" class="text-xs text-slate-400">Punti: 0 | Falli: 0 | Tiri: 0/0</p>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-clipboard-list text-orange-400"></i> Dettagli e Configurazione Gara
+            </h2>
+            <p class="text-xs text-slate-400">Imposta i dati della partita, squadre e parametri di gioco.</p>
           </div>
-        </div>
-        <div class="text-right text-xs text-slate-400 font-mono-code" id="liveClock">
-          Ready
-        </div>
-      </div>
-
-      <!-- Pulsantoni Statistiche -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <!-- Tiro da 2 -->
-        <div class="bg-[#0b1220] p-3 rounded-xl border border-slate-800 space-y-2">
-          <div class="flex justify-between text-xs font-bold text-slate-300">
-            <span>TIRO DA 2 PT</span>
-            <span id="stat2pt" class="text-slate-400 font-mono">0/0</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="recordStat('2pt_made')" class="py-3 bg-emerald-600/90 hover:bg-emerald-500 text-white font-black rounded-lg text-xs shadow-md shadow-emerald-900/30 flex flex-col items-center">
-              <span>+2 SEGNATO</span>
-              <span class="text-[9px] font-normal opacity-80">(Aggiorna Tabellone)</span>
-            </button>
-            <button onclick="recordStat('2pt_miss')" class="py-3 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-900/50 text-rose-300 font-bold rounded-lg text-xs flex flex-col items-center">
-              <span>SBAGLIATO</span>
-              <span class="text-[9px] font-normal opacity-70">(0 Punti)</span>
-            </button>
-          </div>
+          <span id="matchStateBadge" class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            IN CORSO
+          </span>
         </div>
 
-        <!-- Tiro da 3 -->
-        <div class="bg-[#0b1220] p-3 rounded-xl border border-slate-800 space-y-2">
-          <div class="flex justify-between text-xs font-bold text-slate-300">
-            <span>TIRO DA 3 PT</span>
-            <span id="stat3pt" class="text-slate-400 font-mono">0/0</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-400">Squadra Casa (La tua squadra):</label>
+            <input type="text" id="inputHomeTeamName" onchange="updateMatchConfig()" value="Basket Club" class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500">
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="recordStat('3pt_made')" class="py-3 bg-emerald-600/90 hover:bg-emerald-500 text-white font-black rounded-lg text-xs shadow-md shadow-emerald-900/30 flex flex-col items-center">
-              <span>+3 SEGNATO</span>
-              <span class="text-[9px] font-normal opacity-80">(Aggiorna Tabellone)</span>
-            </button>
-            <button onclick="recordStat('3pt_miss')" class="py-3 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-900/50 text-rose-300 font-bold rounded-lg text-xs flex flex-col items-center">
-              <span>SBAGLIATO</span>
-              <span class="text-[9px] font-normal opacity-70">(0 Punti)</span>
-            </button>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-400">Squadra Ospiti (Avversari):</label>
+            <input type="text" id="inputAwayTeamName" onchange="updateMatchConfig()" value="Ospiti" class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500">
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-400">Campionato / Categoria:</label>
+            <input type="text" id="inputCategory" onchange="updateMatchConfig()" value="Under 17 Regionale" class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500">
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-400">Data e Luogo:</label>
+            <input type="text" id="inputMatchVenue" onchange="updateMatchConfig()" placeholder="es. 24/10/2024 - Palasport" class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500">
           </div>
         </div>
 
-        <!-- Tiro Libero -->
-        <div class="bg-[#0b1220] p-3 rounded-xl border border-slate-800 space-y-2">
-          <div class="flex justify-between text-xs font-bold text-slate-300">
-            <span>TIRO LIBERO (TL)</span>
-            <span id="statFt" class="text-slate-400 font-mono">0/0</span>
+        <!-- Sezione Chiusura Partita / Reset -->
+        <div class="pt-4 border-t border-slate-800 flex flex-wrap gap-3 justify-between items-center">
+          <div class="text-xs text-slate-400">
+            Chiudi la partita per congelare il punteggio o azzera per iniziare un nuovo match.
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="recordStat('ft_made')" class="py-3 bg-emerald-600/90 hover:bg-emerald-500 text-white font-black rounded-lg text-xs shadow-md shadow-emerald-900/30 flex flex-col items-center">
-              <span>+1 SEGNATO</span>
-              <span class="text-[9px] font-normal opacity-80">(Aggiorna Tabellone)</span>
+          <div class="flex gap-2">
+            <button onclick="toggleCloseMatch()" id="btnCloseMatch" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow">
+              <i class="fa-solid fa-flag-checkered"></i> <span>Termina / Chiudi Partita</span>
             </button>
-            <button onclick="recordStat('ft_miss')" class="py-3 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-900/50 text-rose-300 font-bold rounded-lg text-xs flex flex-col items-center">
-              <span>SBAGLIATO</span>
-              <span class="text-[9px] font-normal opacity-70">(0 Punti)</span>
+            <button onclick="resetMatch()" class="px-4 py-2 bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 text-rose-300 rounded-xl text-xs font-bold transition flex items-center gap-2">
+              <i class="fa-solid fa-rotate-left"></i> Azzera Partita
             </button>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Seconda Riga: Rimbalzi, Possessi, Falli/Assist -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <button onclick="recordStat('reb_off')" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200">
-          +1 Rimb. Offensivo
-        </button>
-        <button onclick="recordStat('reb_def')" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200">
-          +1 Rimb. Difensivo
-        </button>
-        <button onclick="recordStat('assist')" class="py-2.5 bg-amber-950/40 hover:bg-amber-900/40 border border-amber-800/60 rounded-lg text-xs font-bold text-amber-300">
-          +1 Assist
-        </button>
-        <button onclick="recordStat('foul')" class="py-2.5 bg-rose-900/40 hover:bg-rose-800/40 border border-rose-700/60 rounded-lg text-xs font-bold text-rose-300">
-          +1 Fallo Personale
-        </button>
+    <!-- ------------------------------------------------------------- -->
+    <!-- 3. SEZIONE: LIVE SCOUT (Tabellone & Statistiche Touch)        -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="sectionLiveScout" class="space-y-4">
+      
+      <!-- Tabellone Punteggio e Quarto -->
+      <div class="bg-[#131d31] border border-slate-800 rounded-2xl p-4 shadow-xl grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <!-- Periodo di gioco -->
+        <div class="md:col-span-4 flex flex-col gap-2">
+          <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span>Periodo di Gioco</span>
+            <div class="flex items-center gap-2">
+              <button onclick="undoLastAction()" class="text-orange-400 hover:text-orange-300 text-[11px] font-semibold flex items-center gap-1">
+                <i class="fa-solid fa-arrow-rotate-left"></i> Undo
+              </button>
+              <button onclick="resetMatch()" class="text-rose-400 hover:text-rose-300 text-[11px] font-normal underline">Azzera</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-5 gap-1.5">
+            <button onclick="setQuarter('1Q')" id="btnQ-1Q" class="py-2 rounded-lg font-bold text-xs bg-orange-600 text-white shadow">1°Q</button>
+            <button onclick="setQuarter('2Q')" id="btnQ-2Q" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">2°Q</button>
+            <button onclick="setQuarter('3Q')" id="btnQ-3Q" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">3°Q</button>
+            <button onclick="setQuarter('4Q')" id="btnQ-4Q" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">4°Q</button>
+            <button onclick="setQuarter('OT')" id="btnQ-OT" class="py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">OT</button>
+          </div>
+        </div>
+
+        <!-- Tabellone Punteggi Casa vs Ospiti -->
+        <div class="md:col-span-8 grid grid-cols-7 gap-2 items-center bg-[#0d1424] p-3 rounded-xl border border-slate-800/80">
+          <!-- Casa -->
+          <div class="col-span-3 text-center">
+            <span id="labelTeamHome" class="text-xs uppercase font-extrabold text-orange-400 tracking-wider">CASA</span>
+            <div id="scoreHome" class="text-4xl sm:text-5xl font-black text-white my-1 font-mono-code">0</div>
+            <div class="flex justify-center gap-1">
+              <button onclick="adjustHomeScore(-1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs">-1</button>
+              <button onclick="adjustHomeScore(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold rounded text-xs">+1</button>
+            </div>
+          </div>
+
+          <!-- VS Badge -->
+          <div class="col-span-1 text-center font-black text-slate-600 text-sm">
+            VS
+          </div>
+
+          <!-- Ospiti -->
+          <div class="col-span-3 text-center">
+            <span id="labelTeamAway" class="text-xs uppercase font-extrabold text-blue-400 tracking-wider">OSPITI</span>
+            <div id="scoreAway" class="text-4xl sm:text-5xl font-black text-white my-1 font-mono-code">0</div>
+            <div class="flex justify-center gap-1">
+              <button onclick="adjustAwayScore(-1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs">-1</button>
+              <button onclick="adjustAwayScore(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs">+1</button>
+              <button onclick="adjustAwayScore(2)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs">+2</button>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <!-- Barra Rapida Atleti Convocati -->
+      <div class="bg-[#131d31] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <i class="fa-solid fa-users text-orange-400"></i> Seleziona Giocatore Convocato:
+          </h2>
+          <span class="text-[11px] text-slate-400">Tocca un atleta per registrare le azioni</span>
+        </div>
+
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="liveRosterBar">
+          <!-- Popolato da JS -->
+        </div>
+      </div>
+
+      <!-- Tastierino Touch Statistiche -->
+      <div class="bg-[#131d31] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-4">
+        
+        <!-- Giocatore Attivo Status Card -->
+        <div class="flex items-center justify-between bg-[#0e1626] border border-slate-700/80 p-3 rounded-xl">
+          <div class="flex items-center gap-3">
+            <div id="activePlayerBadge" class="w-10 h-10 rounded-lg bg-orange-600 text-white font-black flex items-center justify-center text-sm shadow">
+              #--
+            </div>
+            <div>
+              <h3 id="activePlayerName" class="font-bold text-sm text-white">Nessun giocatore selezionato</h3>
+              <p id="activePlayerStats" class="text-xs text-slate-400">Punti: 0 | Falli: 0 | Tiri: 0/0</p>
+            </div>
+          </div>
+          <div class="text-right text-xs text-slate-400 font-mono-code" id="matchLiveIndicator">
+            In ascolto
+          </div>
+        </div>
+
+        <!-- Griglia Tiri (2PT, 3PT, TL) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- 2 Punti -->
+          <div class="bg-[#0b1220] p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex justify-between text-xs font-bold text-slate-300">
+              <span>TIRO DA 2 PT</span>
+              <span id="stat2pt" class="text-slate-400 font-mono">0/0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="recordStat('2pt_made')" class="py-3 bg-emerald-600/90 hover:bg-emerald-500 text-white font-black rounded-lg text-xs shadow-md shadow-emerald-900/30 flex flex-col items-center">
+                <span>+2 SEGNATO</span>
+                <span class="text-[9px] font-normal opacity-80">(Aggiorna Tabellone)</span>
+              </button>
+              <button onclick="recordStat('2pt_miss')" class="py-3 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-900/50 text-rose-300 font-bold rounded-lg text-xs flex flex-col items-center">
+                <span>SBAGLIATO</span>
+                <span class="text-[9px] font-normal opacity-70">(0 Punti)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3 Punti -->
+          <div class="bg-[#0b1220] p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex justify-between text-xs font-bold text-slate-300">
+              <span>TIRO DA 3 PT</span>
+              <span id="stat3pt" class="text-slate-400 font-mono">0/0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="recordStat('3pt_made')" class="py-3 bg-emerald-600/90 hover:bg-emerald-500 text-white font-black rounded-lg text-xs shadow-md shadow-emerald-900/30 flex flex-col items-center">
+                <span>+3 SEGNATO</span>
+                <span class="text-[9px] font-normal opacity-80">(Aggiorna Tabellone)</span>
+              </button>
+              <button onclick="recordStat('3pt_miss')" class="py-3 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-900/50 text-rose-300 font-bold rounded-lg text-xs flex flex-col items-center">
+                <span>SBAGLIATO</span>
+                <span class="text-[9px] font-normal opacity-70">(0 Punti)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tiri Liberi -->
+          <div class="bg-[#0b1220] p-3 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex justify-between text-xs font-bold text-slate-300">
+              <span>TIRO LIBERO (TL)</span>
+              <span id="statFt" class="text-slate-400 font-mono">0/0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="recordStat('ft_made')" class="py-3 bg-emerald-600/90 hover:bg-emerald-500 text-white font-black rounded-lg text-xs shadow-md shadow-emerald-900/30 flex flex-col items-center">
+                <span>+1 SEGNATO</span>
+                <span class="text-[9px] font-normal opacity-80">(Aggiorna Tabellone)</span>
+              </button>
+              <button onclick="recordStat('ft_miss')" class="py-3 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-900/50 text-rose-300 font-bold rounded-lg text-xs flex flex-col items-center">
+                <span>SBAGLIATO</span>
+                <span class="text-[9px] font-normal opacity-70">(0 Punti)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seconda Riga: Rimbalzi, Assist, Falli -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button onclick="recordStat('reb_off')" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200">
+            +1 Rimb. Offensivo
+          </button>
+          <button onclick="recordStat('reb_def')" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold text-slate-200">
+            +1 Rimb. Difensivo
+          </button>
+          <button onclick="recordStat('assist')" class="py-2.5 bg-amber-950/40 hover:bg-amber-900/40 border border-amber-800/60 rounded-lg text-xs font-bold text-amber-300">
+            +1 Assist
+          </button>
+          <button onclick="recordStat('foul')" class="py-2.5 bg-rose-900/40 hover:bg-rose-800/40 border border-rose-700/60 rounded-lg text-xs font-bold text-rose-300">
+            +1 Fallo Personale
+          </button>
+        </div>
+
+        <!-- Terza Riga: Recuperata, Persa, Stoppata -->
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="recordStat('stl')" class="py-2 bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-800/60 rounded-lg text-xs font-bold text-emerald-300">
+            +1 Recuperata
+          </button>
+          <button onclick="recordStat('tov')" class="py-2 bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/60 rounded-lg text-xs font-bold text-rose-300">
+            +1 Persa
+          </button>
+          <button onclick="recordStat('blk')" class="py-2 bg-blue-950/40 hover:bg-blue-900/40 border border-blue-800/60 rounded-lg text-xs font-bold text-blue-300">
+            +1 Stoppata
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Ultime Azioni Log Bar -->
+      <div class="bg-[#131d31] border border-slate-800 rounded-2xl p-3 shadow-xl space-y-1.5">
+        <div class="flex justify-between items-center text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <span>Ultime Azioni Registrate</span>
+          <button onclick="undoLastAction()" class="text-orange-400 hover:text-orange-300 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left"></i> Annulla Ultima Azione
+          </button>
+        </div>
+        <div id="liveActionsLog" class="p-2 bg-[#0b1120] rounded-xl text-xs font-mono-code text-slate-300 min-h-[38px] flex items-center overflow-x-auto whitespace-nowrap">
+          <span class="text-slate-500">In attesa della prima azione di gioco...</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ------------------------------------------------------------- -->
+    <!-- 4. SEZIONE: STATISTICHE (Tabella Completa Box Score)          -->
+    <!-- ------------------------------------------------------------- -->
+    <section id="sectionStatistiche" class="hidden space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-[#131d31] p-4 rounded-2xl border border-slate-800 shadow-xl">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-chart-column text-orange-400"></i> Statistiche e Box Score
+          </h2>
+          <p class="text-xs text-slate-400">Riepilogo avanzato individuale e totale squadra.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportStatsCsv()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow transition">
+            <i class="fa-solid fa-file-csv"></i> Esporta CSV
+          </button>
+          <button onclick="window.print()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-print"></i> Stampa Referto
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabella Statistiche Giocatori -->
+      <div class="bg-[#131d31] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-xs">
+            <thead class="bg-[#0e1626] text-slate-400 uppercase font-bold text-[10px] sm:text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="p-3 text-left">#</th>
+                <th class="p-3 text-left">Giocatore</th>
+                <th class="p-3 text-center">PTS</th>
+                <th class="p-3 text-center">2PT</th>
+                <th class="p-3 text-center">3PT</th>
+                <th class="p-3 text-center">TL</th>
+                <th class="p-3 text-center">RIMB (O/D)</th>
+                <th class="p-3 text-center">AST</th>
+                <th class="p-3 text-center">REC</th>
+                <th class="p-3 text-center">PERS</th>
+                <th class="p-3 text-center">STOP</th>
+                <th class="p-3 text-center">FALLI</th>
+                <th class="p-3 text-center text-orange-400 font-black">VAL/EFF</th>
+              </tr>
+            </thead>
+            <tbody id="statsTableBody" class="divide-y divide-slate-800/80 font-mono-code text-slate-200">
+              <!-- Riempito via JS -->
+            </tbody>
+            <!-- Riga Totali Squadra -->
+            <tfoot id="statsTableFoot" class="bg-[#0d1526] font-bold text-white border-t-2 border-slate-700 font-mono-code text-xs">
+              <!-- Riempito via JS -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
     </section>
 
   </main>
 
+  <!-- ================= BOTTOM NAVIGATION BAR (4 TABS) ================= -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#111827]/95 backdrop-blur-md border-t border-slate-800 shadow-2xl">
+    <div class="max-w-xl mx-auto grid grid-cols-4 px-2 py-1.5">
+      
+      <!-- Tab 1: Roster -->
+      <button onclick="switchTab('roster')" id="tabBtn-roster" class="flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-users text-base"></i>
+        <span class="text-[10px] font-bold mt-1">Roster</span>
+      </button>
+
+      <!-- Tab 2: Partita -->
+      <button onclick="switchTab('partita')" id="tabBtn-partita" class="flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-basketball text-base"></i>
+        <span class="text-[10px] font-bold mt-1">Partita</span>
+      </button>
+
+      <!-- Tab 3: Live Scout (Default attiva) -->
+      <button onclick="switchTab('livescout')" id="tabBtn-livescout" class="flex flex-col items-center justify-center py-1.5 rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-950/60 transition">
+        <i class="fa-solid fa-stopwatch-20 text-base"></i>
+        <span class="text-[10px] font-black mt-1">Live Scout</span>
+      </button>
+
+      <!-- Tab 4: Statistiche -->
+      <button onclick="switchTab('statistiche')" id="tabBtn-statistiche" class="flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-chart-simple text-base"></i>
+        <span class="text-[10px] font-bold mt-1">Statistiche</span>
+      </button>
+
+    </div>
+  </nav>
+
   <!-- ================= MODALE: GOOGLE DRIVE CLOUD SYNC ================= -->
   <div id="driveModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-[#111827] border border-slate-700 rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-5 animate-in fade-in duration-200">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
       
       <!-- Header Modale -->
       <div class="flex items-start justify-between">
@@ -241,7 +464,7 @@
               <h3 class="text-base font-bold text-white">Google Drive Cloud Sync</h3>
               <span id="modalDriveStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">NON CONNESSO</span>
             </div>
-            <p class="text-xs text-slate-400">Backup automatico e sincronizzazione multipiattaforma</p>
+            <p class="text-xs text-slate-400">Backup automatico e sincronizzazione PC / Tablet</p>
           </div>
         </div>
         <button onclick="closeDriveModal()" class="text-slate-400 hover:text-white p-1 text-lg">
@@ -260,18 +483,15 @@
 
         <!-- Azioni Account (Accedi / Disconnetti / Cambia) -->
         <div class="flex items-center gap-2 pt-1 flex-wrap">
-          <!-- Bottone Accedi con Google (Mostrato quando scollegato) -->
           <button id="btnGoogleSignIn" onclick="requestGoogleAuth()" class="flex-1 py-2 px-3 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-lg text-xs flex items-center justify-center gap-2 shadow transition">
             <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.66-5.17 3.66-9.12z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.26 21.36 7.33 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.25C.45 8.18 0 10.03 0 12s.45 3.82 1.25 5.42l4.03-3.13z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/></svg>
             Accedi con Google
           </button>
 
-          <!-- Bottone Cambia Account -->
           <button id="btnChangeAccount" onclick="requestGoogleAuth(true)" class="hidden py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold">
             Cambia Account
           </button>
 
-          <!-- Bottone Disconnetti -->
           <button id="btnDisconnect" onclick="disconnectGoogleAccount()" class="hidden py-2 px-3 bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 text-rose-300 rounded-lg text-xs font-semibold">
             Disconnetti
           </button>
@@ -281,16 +501,16 @@
         <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
           <div class="flex justify-between items-center text-[11px] text-slate-400">
             <label for="clientIdInput" class="font-medium">Google OAuth Client ID:</label>
-            <span class="text-[10px] text-slate-500">Salvato solo in locale</span>
+            <span class="text-[10px] text-slate-500">Salvato solo nel tuo browser</span>
           </div>
           <input type="text" id="clientIdInput" placeholder="Inserisci il tuo Client ID da Google Cloud Console" class="w-full bg-[#111827] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-mono-code focus:outline-none focus:border-orange-500">
           <p class="text-[10px] text-slate-500 leading-tight">
-            Crea il tuo Client ID gratuito su <a href="https://console.cloud.google.com/" target="_blank" class="text-orange-400 underline">Google Cloud Console</a> aggiungendo il dominio di GitHub Pages tra le "Origini JavaScript autorizzate".
+            Il client ID consente alla webapp di comunicare direttamente con Google Drive tramite l'origine autorizzata (es. <span class="font-mono text-slate-400">https://gallic23.github.io</span>).
           </p>
         </div>
       </div>
 
-      <!-- Sync manuale & Ripristino -->
+      <!-- Azioni Rapide Sincronizza & Ripristina -->
       <div class="grid grid-cols-2 gap-3">
         <button onclick="syncNowToDrive()" id="btnSyncNow" class="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition space-y-1">
           <div class="flex items-center gap-1.5 text-xs font-bold text-slate-300">
@@ -325,377 +545,154 @@
     </div>
   </div>
 
+  <!-- ================= MODALE: AGGIUNGI / MODIFICA GIOCATORE ================= -->
+  <div id="playerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 id="playerModalTitle" class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-user text-orange-400"></i> Nuovo Giocatore
+        </h3>
+        <button onclick="closePlayerModal()" class="text-slate-400 hover:text-white p-1 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="editPlayerId" value="">
+
+      <div class="space-y-3">
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-300">Numero di Maglia (#):</label>
+          <input type="number" id="inputPlayerNum" min="0" max="99" placeholder="es. 23" class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-orange-500">
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-300">Nome e Cognome:</label>
+          <input type="text" id="inputPlayerName" placeholder="es. Michael Jordan" class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500">
+        </div>
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-slate-300">Ruolo:</label>
+          <select id="inputPlayerRole" class="w-full bg-[#0b1120] border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500">
+            <option value="Playmaker">Playmaker (1)</option>
+            <option value="Guardia">Guardia (2)</option>
+            <option value="Ala Piccola">Ala Piccola (3)</option>
+            <option value="Ala Grande">Ala Grande (4)</option>
+            <option value="Centro">Centro (5)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+        <button onclick="closePlayerModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">Annulla</button>
+        <button onclick="savePlayerFromModal()" class="px-5 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition shadow">Salva</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= JAVASCRIPT LOGIC ================= -->
   <script>
     /* ==============================================================
-       1. STATO DELL'APPLICAZIONE E DATI LOCALI (OFFLINE-FIRST)
+       1. STATO DELL'APPLICAZIONE (SPA MULTI-SCHERMATA & OFFLINE FIRST)
        ============================================================== */
     const APP_CONFIG = {
       BACKUP_FILE_NAME: 'BasketScout_Data.json',
-      FOLDER_NAME: 'BasketScout_Backups',
       STORAGE_KEYS: {
         CLIENT_ID: 'basketscout_gdrive_client_id',
         AUTH_TOKEN: 'basketscout_gdrive_token',
         USER_EMAIL: 'basketscout_gdrive_email',
-        MATCH_DATA: 'basketscout_match_state'
+        MATCH_DATA: 'basketscout_match_state_v140'
       }
     };
 
     let appState = {
+      currentTab: 'livescout',
       quarter: '1Q',
       homeScore: 0,
       awayScore: 0,
+      isMatchClosed: false,
+      matchConfig: {
+        homeTeam: "Basket Club",
+        awayTeam: "Ospiti",
+        category: "Under 17 Regionale",
+        venue: "Palasport"
+      },
       selectedPlayerId: null,
       players: [
-        { id: 1, number: 4, name: "Marco Rossi", role: "Playmaker", pts: 0, rebO: 0, rebD: 0, ast: 0, fouls: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0 },
-        { id: 2, number: 7, name: "Andrea Bianchi", role: "Guardia", pts: 0, rebO: 0, rebD: 0, ast: 0, fouls: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0 },
-        { id: 3, number: 9, name: "Luca Ferrari", role: "Ala Piccola", pts: 0, rebO: 0, rebD: 0, ast: 0, fouls: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0 },
-        { id: 4, number: 12, name: "Matteo Conti", role: "Ala Grande", pts: 0, rebO: 0, rebD: 0, ast: 0, fouls: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0 },
-        { id: 5, number: 15, name: "Davide Ricci", role: "Centro", pts: 0, rebO: 0, rebD: 0, ast: 0, fouls: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0 },
-        { id: 6, number: 21, name: "Stefano De Luca", role: "Guardia", pts: 0, rebO: 0, rebD: 0, ast: 0, fouls: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0 }
+        { id: 1, number: 4, name: "Marco Rossi", role: "Playmaker", active: true, pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0 },
+        { id: 2, number: 7, name: "Andrea Bianchi", role: "Guardia", active: true, pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0 },
+        { id: 3, number: 9, name: "Luca Ferrari", role: "Ala Piccola", active: true, pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0 },
+        { id: 4, number: 12, name: "Matteo Conti", role: "Ala Grande", active: true, pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0 },
+        { id: 5, number: 15, name: "Davide Ricci", role: "Centro", active: true, pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0 },
+        { id: 6, number: 21, name: "Stefano De Luca", role: "Guardia", active: true, pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0, rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0 }
       ],
+      actionsHistory: [],
       cloud: {
         tokenClient: null,
         accessToken: null,
         userEmail: null,
-        fileId: null,
         lastSync: null
       }
     };
 
     /* ==============================================================
-       2. INIZIALIZZAZIONE SDK GOOGLE IDENTITY SERVICES (GSI)
+       2. INIZIALIZZAZIONE & SWITCHING TAB NAVIGATION
        ============================================================== */
     window.addEventListener('DOMContentLoaded', () => {
       loadSavedLocalData();
-      renderRoster();
-      updateScoreboardUI();
+      renderAll();
       initGoogleDriveIntegration();
+      switchTab(appState.currentTab || 'livescout');
     });
 
-    function initGoogleDriveIntegration() {
-      // 1. Carica il Client ID salvato o imposta il campo
-      const savedClientId = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.CLIENT_ID) || '';
-      document.getElementById('clientIdInput').value = savedClientId;
-      document.getElementById('clientIdInput').addEventListener('change', (e) => {
-        localStorage.setItem(APP_CONFIG.STORAGE_KEYS.CLIENT_ID, e.target.value.trim());
-        logSyncMessage(`Client ID aggiornato: ${e.target.value.trim().substring(0, 16)}...`);
-      });
+    function switchTab(tabId) {
+      appState.currentTab = tabId;
+      const tabs = ['roster', 'partita', 'livescout', 'statistiche'];
+      tabs.forEach(t => {
+        const sec = document.getElementById(`section${capitalize(t)}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (!sec || !btn) return;
 
-      // 2. Controlla se c'era una sessione salvata
-      const savedEmail = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.USER_EMAIL);
-      const savedToken = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-
-      if (savedEmail && savedToken) {
-        appState.cloud.accessToken = savedToken;
-        appState.cloud.userEmail = savedEmail;
-        updateDriveUIState(true, savedEmail);
-      } else {
-        // DEFAULT: DISCONNESSO / GRIGIO NEUTRO
-        updateDriveUIState(false, null);
-      }
-    }
-
-    /**
-     * Inizializza ed esegue il flusso di autorizzazione OAuth 2.0 (Token Client)
-     */
-    function requestGoogleAuth(selectAccountPrompt = false) {
-      const clientId = document.getElementById('clientIdInput').value.trim();
-      
-      if (!clientId) {
-        alert("Inserisci prima il tuo 'Google OAuth Client ID' nell'apposito campo della finestra di configurazione.");
-        document.getElementById('clientIdInput').focus();
-        return;
-      }
-
-      // Salva il Client ID per i futuri utilizzi
-      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.CLIENT_ID, clientId);
-
-      if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-        alert("L'SDK Google Identity Services non è ancora caricato. Verifica la connessione a Internet.");
-        return;
-      }
-
-      // Inizializzazione del client OAuth con lo scope drive.file (massima sicurezza)
-      appState.cloud.tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: clientId,
-        scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
-        prompt: selectAccountPrompt ? 'select_account' : '',
-        callback: async (response) => {
-          if (response.error) {
-            console.error("Errore OAuth:", response);
-            logSyncMessage(`Errore autorizzazione: ${response.error}`);
-            return;
-          }
-
-          appState.cloud.accessToken = response.access_token;
-          localStorage.setItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.access_token);
-
-          // Recupera l'indirizzo email dell'utente tramite UserInfo API
-          try {
-            const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { 'Authorization': `Bearer ${response.access_token}` }
-            });
-            if (userInfoRes.ok) {
-              const userInfo = await userInfoRes.json();
-              appState.cloud.userEmail = userInfo.email;
-              localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USER_EMAIL, userInfo.email);
-            } else {
-              appState.cloud.userEmail = "Account Google Connesso";
-            }
-          } catch (e) {
-            appState.cloud.userEmail = "Account Google Connesso";
-          }
-
-          updateDriveUIState(true, appState.cloud.userEmail);
-          logSyncMessage(`Autenticazione riuscita: ${appState.cloud.userEmail}`);
-
-          // Esegui sincronizzazione iniziale immediata
-          syncNowToDrive();
-        }
-      });
-
-      // Avvia popup ufficiale Google
-      appState.cloud.tokenClient.requestAccessToken();
-    }
-
-    /**
-     * Disconnette l'account Google e ripristina lo stato neutro / grigio
-     */
-    function disconnectGoogleAccount() {
-      if (appState.cloud.accessToken && typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-        google.accounts.oauth2.revoke(appState.cloud.accessToken, () => {
-          console.log("Token revocato da Google.");
-        });
-      }
-
-      // Rimuovi credenziali locali
-      appState.cloud.accessToken = null;
-      appState.cloud.userEmail = null;
-      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.USER_EMAIL);
-
-      updateDriveUIState(false, null);
-      logSyncMessage("Disconnessione completata. Token rimosso dal dispositivo.");
-    }
-
-    /**
-     * Aggiorna tutti gli elementi visivi dell'interfaccia (Header e Modale)
-     */
-    function updateDriveUIState(isConnected, email) {
-      // 1. Icona & Header Button
-      const headerIconWrap = document.getElementById('driveHeaderIconWrap');
-      const headerBadge = document.getElementById('driveHeaderBadge');
-      const headerSub = document.getElementById('driveHeaderSub');
-
-      // 2. Elementi Modale
-      const modalIconBox = document.getElementById('modalDriveIconBox');
-      const modalBadge = document.getElementById('modalDriveStatusBadge');
-      const accountDisplay = document.getElementById('accountDisplay');
-      const btnSignIn = document.getElementById('btnGoogleSignIn');
-      const btnChange = document.getElementById('btnChangeAccount');
-      const btnDisconnect = document.getElementById('btnDisconnect');
-
-      if (isConnected && email) {
-        // STATO ATTIVO: Verde smeraldo
-        headerIconWrap.className = 'w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm transition-colors border border-emerald-500/30';
-        headerBadge.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
-        headerBadge.innerText = 'ATTIVO';
-        headerSub.className = 'text-[10px] text-emerald-400 font-medium';
-        headerSub.innerText = 'Sync Cloud Attivo';
-
-        modalIconBox.className = 'w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl';
-        modalBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
-        modalBadge.innerText = 'CONNESSO';
-
-        accountDisplay.innerText = email;
-        accountDisplay.className = 'text-xs font-mono px-2.5 py-1 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/60 font-semibold';
-
-        btnSignIn.classList.add('hidden');
-        btnChange.classList.remove('hidden');
-        btnDisconnect.classList.remove('hidden');
-      } else {
-        // STATO DISCONNESSO: Grigio Neutro assoluto
-        headerIconWrap.className = 'w-7 h-7 rounded-lg bg-slate-700/80 text-slate-400 flex items-center justify-center text-sm transition-colors border border-slate-700';
-        headerBadge.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700';
-        headerBadge.innerText = 'OFFLINE';
-        headerSub.className = 'text-[10px] text-slate-400';
-        headerSub.innerText = 'Non collegato';
-
-        modalIconBox.className = 'w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 flex items-center justify-center text-xl';
-        modalBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700';
-        modalBadge.innerText = 'NON CONNESSO';
-
-        accountDisplay.innerText = 'Nessun account collegato';
-        accountDisplay.className = 'text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700';
-
-        btnSignIn.classList.remove('hidden');
-        btnChange.classList.add('hidden');
-        btnDisconnect.classList.add('hidden');
-      }
-    }
-
-    /* ==============================================================
-       3. OPERAZIONI REST API CON GOOGLE DRIVE (UPLOAD & RESTORE)
-       ============================================================== */
-    async function syncNowToDrive() {
-      if (!appState.cloud.accessToken) {
-        alert("Autenticati con il tuo account Google prima di sincronizzare.");
-        return;
-      }
-
-      logSyncMessage("Avvio sincronizzazione su Google Drive...");
-
-      const payload = {
-        updatedAt: new Date().toISOString(),
-        device: navigator.userAgent,
-        appVersion: "1.3.0",
-        state: {
-          quarter: appState.quarter,
-          homeScore: appState.homeScore,
-          awayScore: appState.awayScore,
-          players: appState.players
-        }
-      };
-
-      try {
-        // 1. Cerca se il file esiste già su Google Drive
-        const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${APP_CONFIG.BACKUP_FILE_NAME}' and trashed=false&fields=files(id,name)`;
-        const searchRes = await fetch(searchUrl, {
-          headers: { 'Authorization': `Bearer ${appState.cloud.accessToken}` }
-        });
-        const searchData = await searchRes.json();
-
-        let fileId = null;
-        if (searchData.files && searchData.files.length > 0) {
-          fileId = searchData.files[0].id;
-        }
-
-        const fileContent = JSON.stringify(payload, null, 2);
-
-        if (fileId) {
-          // 2. Aggiorna il file esistente (PATCH)
-          const updateRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${appState.cloud.accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: fileContent
-          });
-
-          if (updateRes.ok) {
-            logSyncMessage(`File aggiornato con successo (${payload.state.players.length} giocatori salvati).`);
-          } else {
-            throw new Error(`Errore PATCH: ${updateRes.status}`);
-          }
+        if (t === tabId) {
+          sec.classList.remove('hidden');
+          btn.className = "flex flex-col items-center justify-center py-1.5 rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-950/60 transition";
         } else {
-          // 3. Crea un nuovo file con metadati (POST multipart)
-          const metadata = {
-            name: APP_CONFIG.BACKUP_FILE_NAME,
-            mimeType: 'application/json'
-          };
-          const boundary = '-------314159265358979323846';
-          const delimiter = `\r\n--${boundary}\r\n`;
-          const close_delim = `\r\n--${boundary}--`;
-
-          const multipartRequestBody =
-            delimiter +
-            'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-            JSON.stringify(metadata) +
-            delimiter +
-            'Content-Type: application/json\r\n\r\n' +
-            fileContent +
-            close_delim;
-
-          const createRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${appState.cloud.accessToken}`,
-              'Content-Type': `multipart/related; boundary=${boundary}`
-            },
-            body: multipartRequestBody
-          });
-
-          if (createRes.ok) {
-            logSyncMessage("Nuovo file creato su Drive con successo.");
-          } else {
-            throw new Error(`Errore POST: ${createRes.status}`);
-          }
+          sec.classList.add('hidden');
+          btn.className = "flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-200 transition";
         }
+      });
 
-        const nowStr = new Date().toLocaleTimeString();
-        document.getElementById('driveHeaderSub').innerText = `Sync: ${nowStr}`;
-
-      } catch (err) {
-        console.error("Errore sincronizzazione Drive:", err);
-        logSyncMessage(`Errore sync: ${err.message}`);
-      }
+      // Rinfresca viste quando si entra nella scheda
+      if (tabId === 'statistiche') renderStatsTable();
+      if (tabId === 'roster') renderRosterTable();
+      if (tabId === 'livescout') renderLiveRosterBar();
     }
 
-    async function restoreFromDrive() {
-      if (!appState.cloud.accessToken) {
-        alert("Autenticati con il tuo account Google prima di ripristinare i dati.");
-        return;
-      }
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
 
-      logSyncMessage("Ricerca ultimo backup su Google Drive...");
-
-      try {
-        const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${APP_CONFIG.BACKUP_FILE_NAME}' and trashed=false&fields=files(id,name,modifiedTime)`;
-        const searchRes = await fetch(searchUrl, {
-          headers: { 'Authorization': `Bearer ${appState.cloud.accessToken}` }
-        });
-        const searchData = await searchRes.json();
-
-        if (!searchData.files || searchData.files.length === 0) {
-          alert("Nessun file di backup trovato su Google Drive con questo account.");
-          logSyncMessage("Nessun backup trovato sul cloud.");
-          return;
-        }
-
-        const fileId = searchData.files[0].id;
-        const downloadRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-          headers: { 'Authorization': `Bearer ${appState.cloud.accessToken}` }
-        });
-
-        if (!downloadRes.ok) throw new Error("Errore durante il download del file.");
-
-        const backupData = await downloadRes.json();
-        if (backupData && backupData.state) {
-          appState.quarter = backupData.state.quarter || '1Q';
-          appState.homeScore = backupData.state.homeScore || 0;
-          appState.awayScore = backupData.state.awayScore || 0;
-          appState.players = backupData.state.players || appState.players;
-
-          saveLocalState();
-          renderRoster();
-          updateScoreboardUI();
-          setQuarter(appState.quarter);
-
-          logSyncMessage(`Dati ripristinati con successo! Ultimo salvataggio: ${new Date(backupData.updatedAt).toLocaleString()}`);
-          alert("Dati sincronizzati e ripristinati da Google Drive!");
-        }
-      } catch (err) {
-        console.error("Errore ripristino:", err);
-        logSyncMessage(`Errore ripristino: ${err.message}`);
-      }
+    function renderAll() {
+      updateScoreboardUI();
+      renderLiveRosterBar();
+      renderRosterTable();
+      renderStatsTable();
+      updateMatchInputs();
     }
 
     /* ==============================================================
-       4. LOGICA GESTIONE PARTITA E SCOUTING BASKET
+       3. SEZIONE LIVE SCOUT & STATISTICHE TOUCH
        ============================================================== */
-    function renderRoster() {
-      const container = document.getElementById('rosterList');
+    function renderLiveRosterBar() {
+      const container = document.getElementById('liveRosterBar');
       container.innerHTML = '';
 
-      appState.players.forEach(p => {
+      const activePlayers = appState.players.filter(p => p.active !== false);
+
+      activePlayers.forEach(p => {
         const isSelected = p.id === appState.selectedPlayerId;
         const card = document.createElement('button');
         card.onclick = () => selectPlayer(p.id);
         card.className = `p-2.5 rounded-xl border text-left transition flex flex-col justify-between ${
           isSelected 
-            ? 'bg-orange-600/30 border-orange-500 shadow-lg shadow-orange-950/50' 
+            ? 'bg-orange-600/30 border-orange-500 shadow-lg shadow-orange-950/50 ring-1 ring-orange-500' 
             : 'bg-[#0d1424] border-slate-800 hover:border-slate-700'
         }`;
 
@@ -723,70 +720,154 @@
 
       document.getElementById('activePlayerBadge').innerText = `#${player.number}`;
       document.getElementById('activePlayerName').innerText = `${player.name} (${player.role})`;
-      document.getElementById('activePlayerStats').innerText = `Punti: ${player.pts} | Falli: ${player.fouls} | Tiri: ${player.fg2m + player.fg3m}/${player.fg2a + player.fg3a}`;
+      document.getElementById('activePlayerStats').innerText = `Punti: ${player.pts} | Falli: ${player.fouls} | Tiri: ${player.fg2m + player.fg3m}/${player.fg2a + player.fg3a} | Ast: ${player.ast}`;
       
       document.getElementById('stat2pt').innerText = `${player.fg2m}/${player.fg2a}`;
       document.getElementById('stat3pt').innerText = `${player.fg3m}/${player.fg3a}`;
       document.getElementById('statFt').innerText = `${player.ftm}/${player.fta}`;
 
-      renderRoster();
+      renderLiveRosterBar();
     }
 
     function recordStat(type) {
+      if (appState.isMatchClosed) {
+        alert("La partita è chiusa e terminata. Riaprila dalla scheda 'Partita' per registrare altre azioni.");
+        return;
+      }
+
       if (!appState.selectedPlayerId) {
-        alert("Seleziona prima un giocatore per registrare l'evento.");
+        alert("Seleziona prima un giocatore dal roster convocati!");
         return;
       }
 
       const p = appState.players.find(x => x.id === appState.selectedPlayerId);
       if (!p) return;
 
+      // Salvataggio azione per Undo
+      const actionSnapshot = {
+        playerId: p.id,
+        playerName: p.name,
+        playerNumber: p.number,
+        type: type,
+        time: new Date().toLocaleTimeString().slice(0, 5),
+        quarter: appState.quarter
+      };
+
+      let actionDesc = "";
+
       switch(type) {
         case '2pt_made':
-          p.pts += 2;
-          p.fg2m += 1;
-          p.fg2a += 1;
+          p.pts += 2; p.fg2m += 1; p.fg2a += 1;
           appState.homeScore += 2;
+          actionDesc = `+2 Segnato da #${p.number} ${p.name}`;
           break;
         case '2pt_miss':
           p.fg2a += 1;
+          actionDesc = `2PT Errato di #${p.number} ${p.name}`;
           break;
         case '3pt_made':
-          p.pts += 3;
-          p.fg3m += 1;
-          p.fg3a += 1;
+          p.pts += 3; p.fg3m += 1; p.fg3a += 1;
           appState.homeScore += 3;
+          actionDesc = `+3 BOMBA di #${p.number} ${p.name}!`;
           break;
         case '3pt_miss':
           p.fg3a += 1;
+          actionDesc = `3PT Errato di #${p.number} ${p.name}`;
           break;
         case 'ft_made':
-          p.pts += 1;
-          p.ftm += 1;
-          p.fta += 1;
+          p.pts += 1; p.ftm += 1; p.fta += 1;
           appState.homeScore += 1;
+          actionDesc = `+1 Libero a bersaglio #${p.number} ${p.name}`;
           break;
         case 'ft_miss':
           p.fta += 1;
+          actionDesc = `Libero Errato #${p.number} ${p.name}`;
           break;
         case 'reb_off':
           p.rebO += 1;
+          actionDesc = `+1 Rimbalzo OFF #${p.number} ${p.name}`;
           break;
         case 'reb_def':
           p.rebD += 1;
+          actionDesc = `+1 Rimbalzo DIF #${p.number} ${p.name}`;
           break;
         case 'assist':
           p.ast += 1;
+          actionDesc = `+1 Assist di #${p.number} ${p.name}`;
+          break;
+        case 'stl':
+          p.stl += 1;
+          actionDesc = `+1 Recuperata da #${p.number} ${p.name}`;
+          break;
+        case 'tov':
+          p.tov += 1;
+          actionDesc = `+1 Palla Persa #${p.number} ${p.name}`;
+          break;
+        case 'blk':
+          p.blk += 1;
+          actionDesc = `+1 Stoppata di #${p.number} ${p.name}`;
           break;
         case 'foul':
           p.fouls += 1;
-          if (p.fouls === 5) alert(`ATTENZIONE: ${p.name} ha raggiunto 5 falli personali!`);
+          actionDesc = `Fallo #${p.number} ${p.name} (${p.fouls}° fallo)`;
+          if (p.fouls === 5) alert(`⚠️ ATTENZIONE: ${p.name} ha raggiunto 5 falli personali!`);
           break;
       }
 
+      actionSnapshot.description = actionDesc;
+      appState.actionsHistory.push(actionSnapshot);
+
+      updateActionsLogUI(actionDesc);
       saveLocalState();
       updateScoreboardUI();
       selectPlayer(p.id);
+    }
+
+    function undoLastAction() {
+      if (appState.actionsHistory.length === 0) {
+        alert("Nessuna azione da annullare.");
+        return;
+      }
+
+      const last = appState.actionsHistory.pop();
+      const p = appState.players.find(x => x.id === last.playerId);
+      if (!p) return;
+
+      switch(last.type) {
+        case '2pt_made':
+          p.pts -= 2; p.fg2m -= 1; p.fg2a -= 1;
+          appState.homeScore = Math.max(0, appState.homeScore - 2);
+          break;
+        case '2pt_miss': p.fg2a -= 1; break;
+        case '3pt_made':
+          p.pts -= 3; p.fg3m -= 1; p.fg3a -= 1;
+          appState.homeScore = Math.max(0, appState.homeScore - 3);
+          break;
+        case '3pt_miss': p.fg3a -= 1; break;
+        case 'ft_made':
+          p.pts -= 1; p.ftm -= 1; p.fta -= 1;
+          appState.homeScore = Math.max(0, appState.homeScore - 1);
+          break;
+        case 'ft_miss': p.fta -= 1; break;
+        case 'reb_off': p.rebO = Math.max(0, p.rebO - 1); break;
+        case 'reb_def': p.rebD = Math.max(0, p.rebD - 1); break;
+        case 'assist': p.ast = Math.max(0, p.ast - 1); break;
+        case 'stl': p.stl = Math.max(0, p.stl - 1); break;
+        case 'tov': p.tov = Math.max(0, p.tov - 1); break;
+        case 'blk': p.blk = Math.max(0, p.blk - 1); break;
+        case 'foul': p.fouls = Math.max(0, p.fouls - 1); break;
+      }
+
+      updateActionsLogUI(`↩️ Annullata azione: ${last.description}`);
+      saveLocalState();
+      updateScoreboardUI();
+      if (appState.selectedPlayerId) selectPlayer(appState.selectedPlayerId);
+      renderLiveRosterBar();
+    }
+
+    function updateActionsLogUI(text) {
+      const container = document.getElementById('liveActionsLog');
+      container.innerHTML = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-600/20 text-orange-400 border border-orange-500/30 text-xs font-semibold mr-2">${new Date().toLocaleTimeString().slice(0, 5)}</span> <span>${text}</span>`;
     }
 
     function adjustHomeScore(delta) {
@@ -805,6 +886,7 @@
       appState.quarter = q;
       ['1Q', '2Q', '3Q', '4Q', 'OT'].forEach(id => {
         const btn = document.getElementById(`btnQ-${id}`);
+        if (!btn) return;
         if (id === q) {
           btn.className = "py-2 rounded-lg font-bold text-xs bg-orange-600 text-white shadow";
         } else {
@@ -814,33 +896,591 @@
       saveLocalState();
     }
 
-    function resetMatch() {
-      if (!confirm("Sei sicuro di voler azzerare il punteggio e le statistiche della partita corrente?")) return;
-      appState.homeScore = 0;
-      appState.awayScore = 0;
-      appState.quarter = '1Q';
-      appState.players.forEach(p => {
-        p.pts = 0; p.rebO = 0; p.rebD = 0; p.ast = 0; p.fouls = 0;
-        p.fg2m = 0; p.fg2a = 0; p.fg3m = 0; p.fg3a = 0; p.ftm = 0; p.fta = 0;
-      });
-      saveLocalState();
-      updateScoreboardUI();
-      setQuarter('1Q');
-      if (appState.selectedPlayerId) selectPlayer(appState.selectedPlayerId);
-      renderRoster();
-    }
-
     function updateScoreboardUI() {
       document.getElementById('scoreHome').innerText = appState.homeScore;
       document.getElementById('scoreAway').innerText = appState.awayScore;
+      const homeName = appState.matchConfig.homeTeam || "CASA";
+      const awayName = appState.matchConfig.awayTeam || "OSPITI";
+      document.getElementById('labelTeamHome').innerText = homeName;
+      document.getElementById('labelTeamAway').innerText = awayName;
     }
 
+    /* ==============================================================
+       4. SEZIONE ROSTER (Tabella & Modale Aggiungi/Modifica)
+       ============================================================== */
+    function renderRosterTable() {
+      const tbody = document.getElementById('rosterTableBody');
+      tbody.innerHTML = '';
+
+      appState.players.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition";
+        tr.innerHTML = `
+          <td class="p-3.5 text-center">
+            <input type="checkbox" ${p.active !== false ? 'checked' : ''} onchange="togglePlayerActive(${p.id})" class="w-4 h-4 rounded text-orange-600 focus:ring-orange-500 bg-slate-900 border-slate-700 cursor-pointer">
+          </td>
+          <td class="p-3.5 text-center font-black font-mono text-orange-400">#${p.number}</td>
+          <td class="p-3.5 font-bold text-white">${p.name}</td>
+          <td class="p-3.5 text-slate-400">${p.role}</td>
+          <td class="p-3.5 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.active !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'}">
+              ${p.active !== false ? 'Convocato' : 'Inattivo'}
+            </span>
+          </td>
+          <td class="p-3.5 text-right space-x-1">
+            <button onclick="editPlayer(${p.id})" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs transition"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deletePlayer(${p.id})" class="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded text-xs transition"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function togglePlayerActive(id) {
+      const p = appState.players.find(x => x.id === id);
+      if (p) {
+        p.active = !(p.active !== false);
+        saveLocalState();
+        renderLiveRosterBar();
+        renderRosterTable();
+      }
+    }
+
+    function openPlayerModal(editingId = null) {
+      const modal = document.getElementById('playerModal');
+      const title = document.getElementById('playerModalTitle');
+      const inputId = document.getElementById('editPlayerId');
+      const inputNum = document.getElementById('inputPlayerNum');
+      const inputName = document.getElementById('inputPlayerName');
+      const inputRole = document.getElementById('inputPlayerRole');
+
+      if (editingId) {
+        const p = appState.players.find(x => x.id === editingId);
+        if (!p) return;
+        inputId.value = p.id;
+        inputNum.value = p.number;
+        inputName.value = p.name;
+        inputRole.value = p.role;
+        title.innerText = "Modifica Giocatore";
+      } else {
+        inputId.value = "";
+        inputNum.value = "";
+        inputName.value = "";
+        inputRole.value = "Guardia";
+        title.innerText = "Nuovo Giocatore";
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closePlayerModal() {
+      document.getElementById('playerModal').classList.add('hidden');
+    }
+
+    function savePlayerFromModal() {
+      const idVal = document.getElementById('editPlayerId').value;
+      const num = parseInt(document.getElementById('inputPlayerNum').value);
+      const name = document.getElementById('inputPlayerName').value.trim();
+      const role = document.getElementById('inputPlayerRole').value;
+
+      if (isNaN(num) || !name) {
+        alert("Inserisci un numero e un nome valido!");
+        return;
+      }
+
+      if (idVal) {
+        const p = appState.players.find(x => x.id === parseInt(idVal));
+        if (p) {
+          p.number = num;
+          p.name = name;
+          p.role = role;
+        }
+      } else {
+        const newId = Date.now();
+        appState.players.push({
+          id: newId,
+          number: num,
+          name: name,
+          role: role,
+          active: true,
+          pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0,
+          rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0
+        });
+      }
+
+      closePlayerModal();
+      saveLocalState();
+      renderAll();
+    }
+
+    function editPlayer(id) {
+      openPlayerModal(id);
+    }
+
+    function deletePlayer(id) {
+      if (!confirm("Sei sicuro di voler rimuovere questo atleta dal roster?")) return;
+      appState.players = appState.players.filter(p => p.id !== id);
+      if (appState.selectedPlayerId === id) appState.selectedPlayerId = null;
+      saveLocalState();
+      renderAll();
+    }
+
+    /* ==============================================================
+       5. SEZIONE PARTITA (Configurazione e Chiusura)
+       ============================================================== */
+    function updateMatchConfig() {
+      appState.matchConfig.homeTeam = document.getElementById('inputHomeTeamName').value.trim();
+      appState.matchConfig.awayTeam = document.getElementById('inputAwayTeamName').value.trim();
+      appState.matchConfig.category = document.getElementById('inputCategory').value.trim();
+      appState.matchConfig.venue = document.getElementById('inputMatchVenue').value.trim();
+      saveLocalState();
+      updateScoreboardUI();
+    }
+
+    function updateMatchInputs() {
+      document.getElementById('inputHomeTeamName').value = appState.matchConfig.homeTeam || "Basket Club";
+      document.getElementById('inputAwayTeamName').value = appState.matchConfig.awayTeam || "Ospiti";
+      document.getElementById('inputCategory').value = appState.matchConfig.category || "";
+      document.getElementById('inputMatchVenue').value = appState.matchConfig.venue || "";
+      updateCloseMatchButton();
+    }
+
+    function toggleCloseMatch() {
+      appState.isMatchClosed = !appState.isMatchClosed;
+      updateCloseMatchButton();
+      saveLocalState();
+    }
+
+    function updateCloseMatchButton() {
+      const btn = document.getElementById('btnCloseMatch');
+      const badge = document.getElementById('matchStateBadge');
+      const liveBadge = document.getElementById('liveStatusBadge');
+
+      if (appState.isMatchClosed) {
+        btn.innerHTML = `<i class="fa-solid fa-lock-open"></i> <span>Riapri Partita</span>`;
+        btn.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow";
+        badge.innerText = "PARTITA CONCLUSA";
+        badge.className = "text-xs font-bold px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700";
+        liveBadge.className = "inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+        liveBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span> TERMINATA`;
+      } else {
+        btn.innerHTML = `<i class="fa-solid fa-flag-checkered"></i> <span>Termina / Chiudi Partita</span>`;
+        btn.className = "px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow";
+        badge.innerText = "IN CORSO";
+        badge.className = "text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+        liveBadge.className = "inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+        liveBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE`;
+      }
+    }
+
+    function resetMatch() {
+      if (!confirm("Sei sicuro di voler azzerare il punteggio e tutte le statistiche della gara in corso?")) return;
+      appState.homeScore = 0;
+      appState.awayScore = 0;
+      appState.quarter = '1Q';
+      appState.isMatchClosed = false;
+      appState.actionsHistory = [];
+      appState.players.forEach(p => {
+        p.pts = 0; p.fg2m = 0; p.fg2a = 0; p.fg3m = 0; p.fg3a = 0; p.ftm = 0; p.fta = 0;
+        p.rebO = 0; p.rebD = 0; p.ast = 0; p.stl = 0; p.tov = 0; p.blk = 0; p.fouls = 0;
+      });
+      saveLocalState();
+      renderAll();
+      setQuarter('1Q');
+      updateActionsLogUI("Partita azzerata con successo.");
+    }
+
+    /* ==============================================================
+       6. SEZIONE STATISTICHE (Tabella Box Score & Esportazione CSV)
+       ============================================================== */
+    function renderStatsTable() {
+      const tbody = document.getElementById('statsTableBody');
+      const tfoot = document.getElementById('statsTableFoot');
+      tbody.innerHTML = '';
+
+      let totals = {
+        pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0,
+        rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0, val: 0
+      };
+
+      appState.players.forEach(p => {
+        const val = calculateEfficiency(p);
+        totals.pts += p.pts;
+        totals.fg2m += p.fg2m; totals.fg2a += p.fg2a;
+        totals.fg3m += p.fg3m; totals.fg3a += p.fg3a;
+        totals.ftm += p.ftm; totals.fta += p.fta;
+        totals.rebO += p.rebO; totals.rebD += p.rebD;
+        totals.ast += p.ast; totals.stl += p.stl;
+        totals.tov += p.tov; totals.blk += p.blk;
+        totals.fouls += p.fouls;
+        totals.val += val;
+
+        const perc2 = p.fg2a > 0 ? Math.round((p.fg2m / p.fg2a) * 100) + '%' : '-';
+        const perc3 = p.fg3a > 0 ? Math.round((p.fg3m / p.fg3a) * 100) + '%' : '-';
+        const percFt = p.fta > 0 ? Math.round((p.ftm / p.fta) * 100) + '%' : '-';
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition";
+        tr.innerHTML = `
+          <td class="p-3 text-left font-black text-orange-400">#${p.number}</td>
+          <td class="p-3 text-left font-bold text-white">${p.name}</td>
+          <td class="p-3 text-center font-black text-white bg-slate-900/40">${p.pts}</td>
+          <td class="p-3 text-center text-slate-300">${p.fg2m}/${p.fg2a} <span class="text-[10px] text-slate-500">(${perc2})</span></td>
+          <td class="p-3 text-center text-slate-300">${p.fg3m}/${p.fg3a} <span class="text-[10px] text-slate-500">(${perc3})</span></td>
+          <td class="p-3 text-center text-slate-300">${p.ftm}/${p.fta} <span class="text-[10px] text-slate-500">(${percFt})</span></td>
+          <td class="p-3 text-center text-slate-300">${p.rebO + p.rebD} <span class="text-[10px] text-slate-500">(${p.rebO}/${p.rebD})</span></td>
+          <td class="p-3 text-center text-amber-300">${p.ast}</td>
+          <td class="p-3 text-center text-emerald-300">${p.stl}</td>
+          <td class="p-3 text-center text-rose-300">${p.tov}</td>
+          <td class="p-3 text-center text-blue-300">${p.blk}</td>
+          <td class="p-3 text-center font-bold ${p.fouls >= 4 ? 'text-rose-400' : 'text-slate-300'}">${p.fouls}</td>
+          <td class="p-3 text-center font-black ${val >= 10 ? 'text-emerald-400' : (val < 0 ? 'text-rose-400' : 'text-orange-400')}">${val}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Calcolo percentuali totali
+      const totPerc2 = totals.fg2a > 0 ? Math.round((totals.fg2m / totals.fg2a) * 100) + '%' : '-';
+      const totPerc3 = totals.fg3a > 0 ? Math.round((totals.fg3m / totals.fg3a) * 100) + '%' : '-';
+      const totPercFt = totals.fta > 0 ? Math.round((totals.ftm / totals.fta) * 100) + '%' : '-';
+
+      tfoot.innerHTML = `
+        <tr>
+          <td class="p-3 text-left">TOT</td>
+          <td class="p-3 text-left uppercase">Totale Squadra</td>
+          <td class="p-3 text-center text-orange-400 text-sm font-black">${totals.pts}</td>
+          <td class="p-3 text-center">${totals.fg2m}/${totals.fg2a} (${totPerc2})</td>
+          <td class="p-3 text-center">${totals.fg3m}/${totals.fg3a} (${totPerc3})</td>
+          <td class="p-3 text-center">${totals.ftm}/${totals.fta} (${totPercFt})</td>
+          <td class="p-3 text-center">${totals.rebO + totals.rebD} (${totals.rebO}/${totals.rebD})</td>
+          <td class="p-3 text-center text-amber-400">${totals.ast}</td>
+          <td class="p-3 text-center text-emerald-400">${totals.stl}</td>
+          <td class="p-3 text-center text-rose-400">${totals.tov}</td>
+          <td class="p-3 text-center text-blue-400">${totals.blk}</td>
+          <td class="p-3 text-center">${totals.fouls}</td>
+          <td class="p-3 text-center text-orange-400 text-sm">${totals.val}</td>
+        </tr>
+      `;
+    }
+
+    function calculateEfficiency(p) {
+      // Valutazione Lega Basket / FIBA:
+      // (PTS + REB + AST + STL + BLK) - (Tiri Sbagliati) - (TL Sbagliati) - (TOV) - (Falli Fatti)
+      const missedFg = (p.fg2a - p.fg2m) + (p.fg3a - p.fg3m);
+      const missedFt = (p.fta - p.ftm);
+      const positive = p.pts + (p.rebO + p.rebD) + p.ast + p.stl + p.blk;
+      const negative = missedFg + missedFt + p.tov + p.fouls;
+      return positive - negative;
+    }
+
+    function exportStatsCsv() {
+      let csv = "Numero;Nome;Ruolo;Punti;2PT_Segnati;2PT_Tentati;3PT_Segnati;3PT_Tentati;TL_Segnati;TL_Tentati;Rimb_Off;Rimb_Dif;Assist;Recuperate;Perse;Stoppate;Falli;Valutazione\n";
+      appState.players.forEach(p => {
+        const val = calculateEfficiency(p);
+        csv += `${p.number};"${p.name}";"${p.role}";${p.pts};${p.fg2m};${p.fg2a};${p.fg3m};${p.fg3a};${p.ftm};${p.fta};${p.rebO};${p.rebD};${p.ast};${p.stl};${p.tov};${p.blk};${p.fouls};${val}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Referto_BasketScout_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    /* ==============================================================
+       7. GOOGLE IDENTITY SERVICES (GSI) & CLOUD SYNC DRIVE REST API
+       ============================================================== */
+    function initGoogleDriveIntegration() {
+      const savedClientId = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.CLIENT_ID) || '';
+      document.getElementById('clientIdInput').value = savedClientId;
+      document.getElementById('clientIdInput').addEventListener('change', (e) => {
+        localStorage.setItem(APP_CONFIG.STORAGE_KEYS.CLIENT_ID, e.target.value.trim());
+        logSyncMessage(`Client ID aggiornato.`);
+      });
+
+      const savedEmail = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.USER_EMAIL);
+      const savedToken = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+
+      if (savedEmail && savedToken) {
+        appState.cloud.accessToken = savedToken;
+        appState.cloud.userEmail = savedEmail;
+        updateDriveUIState(true, savedEmail);
+      } else {
+        updateDriveUIState(false, null);
+      }
+    }
+
+    function requestGoogleAuth(selectAccountPrompt = false) {
+      const clientId = document.getElementById('clientIdInput').value.trim();
+      
+      if (!clientId) {
+        alert("Inserisci prima il tuo 'Google OAuth Client ID' nell'apposito campo della finestra.");
+        document.getElementById('clientIdInput').focus();
+        return;
+      }
+
+      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.CLIENT_ID, clientId);
+
+      if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+        alert("L'SDK Google Identity Services non è ancora caricato. Verifica la connessione a Internet.");
+        return;
+      }
+
+      appState.cloud.tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
+        prompt: selectAccountPrompt ? 'select_account' : '',
+        callback: async (response) => {
+          if (response.error) {
+            console.error("Errore OAuth:", response);
+            logSyncMessage(`Errore autorizzazione: ${response.error}`);
+            return;
+          }
+
+          appState.cloud.accessToken = response.access_token;
+          localStorage.setItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.access_token);
+
+          try {
+            const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { 'Authorization': `Bearer ${response.access_token}` }
+            });
+            if (userInfoRes.ok) {
+              const userInfo = await userInfoRes.json();
+              appState.cloud.userEmail = userInfo.email;
+              localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USER_EMAIL, userInfo.email);
+            } else {
+              appState.cloud.userEmail = "Account Google Connesso";
+            }
+          } catch (e) {
+            appState.cloud.userEmail = "Account Google Connesso";
+          }
+
+          updateDriveUIState(true, appState.cloud.userEmail);
+          logSyncMessage(`Autenticazione riuscita: ${appState.cloud.userEmail}`);
+          syncNowToDrive();
+        }
+      });
+
+      appState.cloud.tokenClient.requestAccessToken();
+    }
+
+    function disconnectGoogleAccount() {
+      if (appState.cloud.accessToken && typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
+        google.accounts.oauth2.revoke(appState.cloud.accessToken, () => {
+          console.log("Token revocato.");
+        });
+      }
+
+      appState.cloud.accessToken = null;
+      appState.cloud.userEmail = null;
+      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.USER_EMAIL);
+
+      updateDriveUIState(false, null);
+      logSyncMessage("Disconnessione completata. Token rimosso dal browser.");
+    }
+
+    function updateDriveUIState(isConnected, email) {
+      const headerIconWrap = document.getElementById('driveHeaderIconWrap');
+      const headerBadge = document.getElementById('driveHeaderBadge');
+      const headerSub = document.getElementById('driveHeaderSub');
+
+      const modalIconBox = document.getElementById('modalDriveIconBox');
+      const modalBadge = document.getElementById('modalDriveStatusBadge');
+      const accountDisplay = document.getElementById('accountDisplay');
+      const btnSignIn = document.getElementById('btnGoogleSignIn');
+      const btnChange = document.getElementById('btnChangeAccount');
+      const btnDisconnect = document.getElementById('btnDisconnect');
+
+      if (isConnected && email) {
+        headerIconWrap.className = 'w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm transition-colors border border-emerald-500/30';
+        headerBadge.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+        headerBadge.innerText = 'ATTIVO';
+        headerSub.className = 'text-[10px] text-emerald-400 font-medium';
+        headerSub.innerText = 'Sync Cloud Attivo';
+
+        modalIconBox.className = 'w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl';
+        modalBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+        modalBadge.innerText = 'CONNESSO';
+
+        accountDisplay.innerText = email;
+        accountDisplay.className = 'text-xs font-mono px-2.5 py-1 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/60 font-semibold';
+
+        btnSignIn.classList.add('hidden');
+        btnChange.classList.remove('hidden');
+        btnDisconnect.classList.remove('hidden');
+      } else {
+        headerIconWrap.className = 'w-7 h-7 rounded-lg bg-slate-700/80 text-slate-400 flex items-center justify-center text-sm transition-colors border border-slate-700';
+        headerBadge.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700';
+        headerBadge.innerText = 'OFFLINE';
+        headerSub.className = 'text-[10px] text-slate-400';
+        headerSub.innerText = 'Non collegato';
+
+        modalIconBox.className = 'w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 flex items-center justify-center text-xl';
+        modalBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700';
+        modalBadge.innerText = 'NON CONNESSO';
+
+        accountDisplay.innerText = 'Nessun account collegato';
+        accountDisplay.className = 'text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700';
+
+        btnSignIn.classList.remove('hidden');
+        btnChange.classList.add('hidden');
+        btnDisconnect.classList.add('hidden');
+      }
+    }
+
+    async function syncNowToDrive() {
+      if (!appState.cloud.accessToken) {
+        alert("Autenticati con il tuo account Google prima di avviare la sincronizzazione.");
+        return;
+      }
+
+      logSyncMessage("Avvio sincronizzazione su Google Drive...");
+
+      const payload = {
+        updatedAt: new Date().toISOString(),
+        device: navigator.userAgent,
+        appVersion: "1.4.0",
+        state: {
+          quarter: appState.quarter,
+          homeScore: appState.homeScore,
+          awayScore: appState.awayScore,
+          matchConfig: appState.matchConfig,
+          isMatchClosed: appState.isMatchClosed,
+          players: appState.players,
+          actionsHistory: appState.actionsHistory
+        }
+      };
+
+      try {
+        const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${APP_CONFIG.BACKUP_FILE_NAME}' and trashed=false&fields=files(id,name)`;
+        const searchRes = await fetch(searchUrl, {
+          headers: { 'Authorization': `Bearer ${appState.cloud.accessToken}` }
+        });
+        const searchData = await searchRes.json();
+
+        let fileId = null;
+        if (searchData.files && searchData.files.length > 0) {
+          fileId = searchData.files[0].id;
+        }
+
+        const fileContent = JSON.stringify(payload, null, 2);
+
+        if (fileId) {
+          const updateRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${appState.cloud.accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: fileContent
+          });
+
+          if (updateRes.ok) {
+            logSyncMessage(`File aggiornato con successo (${payload.state.players.length} atleti salvati).`);
+          } else {
+            throw new Error(`Errore PATCH: ${updateRes.status}`);
+          }
+        } else {
+          const metadata = { name: APP_CONFIG.BACKUP_FILE_NAME, mimeType: 'application/json' };
+          const boundary = '-------314159265358979323846';
+          const multipartRequestBody =
+            `\r\n--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
+            JSON.stringify(metadata) +
+            `\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n` +
+            fileContent +
+            `\r\n--${boundary}--`;
+
+          const createRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${appState.cloud.accessToken}`,
+              'Content-Type': `multipart/related; boundary=${boundary}`
+            },
+            body: multipartRequestBody
+          });
+
+          if (createRes.ok) {
+            logSyncMessage("Nuovo file di backup creato su Drive.");
+          } else {
+            throw new Error(`Errore POST: ${createRes.status}`);
+          }
+        }
+
+        const nowStr = new Date().toLocaleTimeString();
+        document.getElementById('driveHeaderSub').innerText = `Sync: ${nowStr}`;
+
+      } catch (err) {
+        console.error("Errore sync Drive:", err);
+        logSyncMessage(`Errore: ${err.message}`);
+      }
+    }
+
+    async function restoreFromDrive() {
+      if (!appState.cloud.accessToken) {
+        alert("Autenticati con il tuo account Google prima di ripristinare i dati.");
+        return;
+      }
+
+      logSyncMessage("Download ultimo backup da Google Drive...");
+
+      try {
+        const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${APP_CONFIG.BACKUP_FILE_NAME}' and trashed=false&fields=files(id,name,modifiedTime)`;
+        const searchRes = await fetch(searchUrl, {
+          headers: { 'Authorization': `Bearer ${appState.cloud.accessToken}` }
+        });
+        const searchData = await searchRes.json();
+
+        if (!searchData.files || searchData.files.length === 0) {
+          alert("Nessun backup trovato su questo account Google Drive.");
+          logSyncMessage("Nessun backup trovato sul cloud.");
+          return;
+        }
+
+        const fileId = searchData.files[0].id;
+        const downloadRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+          headers: { 'Authorization': `Bearer ${appState.cloud.accessToken}` }
+        });
+
+        if (!downloadRes.ok) throw new Error("Errore durante il download da Drive.");
+
+        const backupData = await downloadRes.json();
+        if (backupData && backupData.state) {
+          appState.quarter = backupData.state.quarter || '1Q';
+          appState.homeScore = backupData.state.homeScore || 0;
+          appState.awayScore = backupData.state.awayScore || 0;
+          if (backupData.state.matchConfig) appState.matchConfig = backupData.state.matchConfig;
+          if (typeof backupData.state.isMatchClosed !== 'undefined') appState.isMatchClosed = backupData.state.isMatchClosed;
+          if (backupData.state.players) appState.players = backupData.state.players;
+          if (backupData.state.actionsHistory) appState.actionsHistory = backupData.state.actionsHistory;
+
+          saveLocalState();
+          renderAll();
+          setQuarter(appState.quarter);
+
+          logSyncMessage(`Dati ripristinati da Drive! Aggiornato al: ${new Date(backupData.updatedAt).toLocaleTimeString()}`);
+          alert("Dati e statistiche ripristinati da Google Drive!");
+        }
+      } catch (err) {
+        console.error("Errore ripristino:", err);
+        logSyncMessage(`Errore ripristino: ${err.message}`);
+      }
+    }
+
+    /* ==============================================================
+       8. SALVATAGGIO LOCALE & EXPORT JSON
+       ============================================================== */
     function saveLocalState() {
       localStorage.setItem(APP_CONFIG.STORAGE_KEYS.MATCH_DATA, JSON.stringify({
         quarter: appState.quarter,
         homeScore: appState.homeScore,
         awayScore: appState.awayScore,
-        players: appState.players
+        matchConfig: appState.matchConfig,
+        isMatchClosed: appState.isMatchClosed,
+        players: appState.players,
+        actionsHistory: appState.actionsHistory
       }));
     }
 
@@ -852,8 +1492,11 @@
           appState.quarter = parsed.quarter || '1Q';
           appState.homeScore = parsed.homeScore || 0;
           appState.awayScore = parsed.awayScore || 0;
+          if (parsed.matchConfig) appState.matchConfig = parsed.matchConfig;
+          if (typeof parsed.isMatchClosed !== 'undefined') appState.isMatchClosed = parsed.isMatchClosed;
           if (parsed.players && parsed.players.length) appState.players = parsed.players;
-        } catch(e) { console.error("Errore lettura dati locali", e); }
+          if (parsed.actionsHistory) appState.actionsHistory = parsed.actionsHistory;
+        } catch(e) { console.error("Errore caricamento dati locali:", e); }
       }
     }
 
@@ -861,7 +1504,7 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `BasketScout_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `BasketScout_Export_${new Date().toISOString().slice(0, 10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -875,7 +1518,6 @@
       logBox.prepend(item);
     }
 
-    /* Modal Controls */
     function openDriveModal() {
       document.getElementById('driveModal').classList.remove('hidden');
     }
