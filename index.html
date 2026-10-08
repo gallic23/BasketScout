@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>BasketScout Pro - Live Mobile Scouting</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            court: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+              900: '#7c2d12',
+            },
+            darkcourt: '#0f172a',
+            board: '#1e293b'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Mobile-first touch optimization */
+    * {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, select, textarea {
+      user-select: auto;
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 9999px;
+    }
+    .touch-btn:active {
+      transform: scale(0.96);
+    }
+    /* Pulsing alert for halftime */
+    @keyframes pulse-amber {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+    .halftime-alert {
+      animation: pulse-amber 1.8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+  <!-- Top App Bar / Status -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-md">
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center font-black text-white shadow-lg shadow-orange-600/30">
+        🏀
+      </div>
+      <div>
+        <h1 class="text-sm font-black tracking-wider uppercase text-white flex items-center gap-1.5">
+          BasketScout <span class="text-[10px] bg-orange-500/20 text-orange-400 font-bold px-1.5 py-0.5 rounded border border-orange-500/30">LIVE</span>
+        </h1>
+        <p id="live-header-sub" class="text-[11px] text-slate-400 truncate max-w-[200px]">Offline Field Ready • Touch Pro</p>
+      </div>
+    </div>
+
+    <!-- Quick Game Banner or Export Trigger -->
+    <div class="flex items-center space-x-2">
+      <button onclick="openExportModal()" title="Esporta Dati" class="touch-btn p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 flex items-center gap-1 text-xs font-semibold">
+        <i data-lucide="download" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Esporta</span>
+      </button>
+      <div id="quick-score-badge" class="hidden bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800 text-xs font-mono font-bold text-orange-400">
+        <span id="badge-home">0</span> - <span id="badge-away">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="flex-1 pb-20 max-w-5xl mx-auto w-full p-2 sm:p-4">
+
+    <!-- 1. MODULO: GESTIONE ROSTER -->
+    <section id="view-roster" class="hidden space-y-4">
+      <div class="flex items-center justify-between bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="users" class="w-5 h-5 text-orange-500"></i> Anagrafica Roster
+          </h2>
+          <p class="text-xs text-slate-400">Gestisci i giocatori della squadra. Salva direttamente offline.</p>
+        </div>
+        <button onclick="openPlayerModal()" class="touch-btn bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-md shadow-orange-600/30">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Nuovo Giocatore
+        </button>
+      </div>
+
+      <!-- Player Cards Grid -->
+      <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+        <!-- Rendered dynamically -->
+      </div>
+      <div id="roster-empty-state" class="hidden text-center py-12 px-4 bg-slate-900/40 rounded-2xl border border-dashed border-slate-800">
+        <div class="text-4xl mb-2">📋</div>
+        <h3 class="text-base font-semibold text-slate-300">Nessun giocatore registrato</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">Inserisci i componenti della squadra con il loro numero di maglia unico prima di impostare la partita.</p>
+        <button onclick="seedSampleRoster()" class="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-orange-400 border border-slate-700 text-xs rounded-lg font-medium">
+          Carica Roster di Esempio (12 Giocatori)
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. MODULO: CONFIGURAZIONE PARTITA -->
+    <section id="view-match-setup" class="hidden space-y-4">
+      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm space-y-4">
+        <div class="border-b border-slate-800 pb-3">
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="clipboard-list" class="w-5 h-5 text-orange-500"></i> Dettagli Partita
+          </h2>
+          <p class="text-xs text-slate-400">Configura i dati della gara e seleziona esattamente i 12 convocati.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">N° Partita / Codice</label>
+            <input type="text" id="setup-match-num" placeholder="Es. GARA-04" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none text-white font-medium">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Data e Ora</label>
+            <input type="datetime-local" id="setup-match-datetime" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none text-white">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Squadra Avversaria</label>
+            <input type="text" id="setup-opponent-name" placeholder="Es. Olimpia Basket" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none text-white font-medium">
+          </div>
+        </div>
+
+        <!-- 12 Convocati Checklist -->
+        <div class="pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              Convocati Partita:
+              <span id="selected-convocati-badge" class="px-2 py-0.5 rounded-full text-xs font-extrabold bg-slate-800 text-orange-400 border border-slate-700">0 / 12</span>
+            </span>
+            <div class="flex gap-2">
+              <button onclick="selectAllRoster(true)" class="text-[11px] text-orange-400 underline font-semibold">Tutti i primi 12</button>
+              <button onclick="selectAllRoster(false)" class="text-[11px] text-slate-400 underline">Deseleziona</button>
+            </div>
+          </div>
+
+          <div id="setup-players-checklist" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Start live scouting action -->
+        <div class="pt-3 flex flex-col sm:flex-row gap-2.5">
+          <button id="btn-start-scout" onclick="startScoutingSession()" class="touch-btn flex-1 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
+            <i data-lucide="play-circle" class="w-5 h-5"></i> Inizia Scouting Live
+          </button>
+          <button id="btn-resume-scout" onclick="resumeActiveMatch()" class="touch-btn hidden flex-1 bg-slate-800 hover:bg-slate-700 text-orange-400 border border-orange-500/40 font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm">
+            <i data-lucide="fast-forward" class="w-5 h-5"></i> Riprendi Partita in Corso
+          </button>
+        </div>
+      </div>
+
+      <!-- Past Matches Quick List -->
+      <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+        <h3 class="text-xs font-bold uppercase text-slate-400 mb-2">Storico Partite Salvate</h3>
+        <div id="saved-matches-list" class="space-y-1.5 text-xs">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MODULO: INTERFACCIA SCOUTING LIVE -->
+    <section id="view-live-scout" class="space-y-3">
+
+      <!-- MACRO-ZONA 1: TEMPO, QUARTO E TABELLONE SEGNAPUNTI -->
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 shadow-lg relative overflow-hidden">
+        <!-- Halftime notification banner -->
+        <div id="halftime-banner" class="hidden halftime-alert mb-2.5 py-1.5 px-3 bg-amber-500/20 border border-amber-500/50 rounded-xl text-center text-amber-300 font-extrabold text-xs flex items-center justify-center gap-2">
+          <span>⏸️</span> INTERVALLO LUNGO (Fine 2° Quarto) - RIPOSO SQUADRE
+        </div>
+
+        <div class="grid grid-cols-12 gap-2 items-center">
+          
+          <!-- Period Selector & Status (Touch buttons) -->
+          <div class="col-span-12 sm:col-span-5 flex flex-col justify-between space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase text-slate-400">Periodo di Gioco (10')</span>
+              <span id="live-match-label" class="text-[11px] font-mono text-orange-400 font-semibold truncate max-w-[150px]">Partita</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1">
+              <button onclick="setQuarter(1)" id="btn-q1" class="touch-btn py-2 text-xs font-black rounded-lg border bg-orange-600 border-orange-500 text-white">1° Q</button>
+              <button onclick="setQuarter(2)" id="btn-q2" class="touch-btn py-2 text-xs font-black rounded-lg border bg-slate-800 border-slate-700 text-slate-300">2° Q</button>
+              <button onclick="setQuarter(3)" id="btn-q3" class="touch-btn py-2 text-xs font-black rounded-lg border bg-slate-800 border-slate-700 text-slate-300">3° Q</button>
+              <button onclick="setQuarter(4)" id="btn-q4" class="touch-btn py-2 text-xs font-black rounded-lg border bg-slate-800 border-slate-700 text-slate-300">4° Q</button>
+            </div>
+            <!-- Extra OT Button if tied -->
+            <div class="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+              <button onclick="setQuarter('OT')" id="btn-qOT" class="touch-btn px-2 py-1 bg-slate-800 border border-slate-700 text-slate-400 rounded hover:text-white">Tempo Suppl. (OT)</button>
+              <button onclick="confirmFinishMatch()" class="touch-btn text-rose-400 font-bold hover:underline">Chiudi Partita 🏁</button>
+            </div>
+          </div>
+
+          <!-- Main Scoreboard -->
+          <div class="col-span-12 sm:col-span-7 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-center justify-around">
+            <!-- Home Team Score -->
+            <div class="text-center flex-1">
+              <div class="text-[11px] font-extrabold uppercase text-orange-400 tracking-wider">CASA</div>
+              <div id="live-home-score" class="text-3xl sm:text-4xl font-black font-mono text-white leading-none my-0.5">0</div>
+              <div class="flex items-center justify-center gap-1">
+                <button onclick="adjustTeamScore('home', -1)" class="touch-btn px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded text-[10px] font-bold border border-slate-700">-1 Corr.</button>
+                <button onclick="adjustTeamScore('home', 1)" class="touch-btn px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-orange-400 rounded text-[10px] font-bold border border-slate-700">+1</button>
+              </div>
+            </div>
+
+            <!-- VS Divider -->
+            <div class="px-2 text-center">
+              <span class="text-xs font-black text-slate-600 block">VS</span>
+              <span id="current-q-badge" class="px-2 py-0.5 bg-orange-950/80 text-orange-400 border border-orange-800/40 text-[10px] font-black rounded">Q1</span>
+            </div>
+
+            <!-- Opponent Team Score -->
+            <div class="text-center flex-1">
+              <div id="live-opponent-label" class="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider truncate max-w-[100px] mx-auto">OSPITI</div>
+              <div id="live-away-score" class="text-3xl sm:text-4xl font-black font-mono text-slate-200 leading-none my-0.5">0</div>
+              <div class="flex items-center justify-center gap-1">
+                <button onclick="adjustTeamScore('away', -1)" class="touch-btn px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded text-[10px] font-bold border border-slate-700">-1 Corr.</button>
+                <button onclick="adjustTeamScore('away', 1)" class="touch-btn px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded text-[10px] font-bold border border-slate-700">+1 Avv.</button>
+                <button onclick="adjustTeamScore('away', 2)" class="touch-btn px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded text-[10px] font-bold border border-slate-700">+2</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Live Notification Toast / Undo Banner -->
+      <div id="live-action-feedback" class="transition-all duration-200 opacity-0 bg-slate-900 border border-orange-500/40 text-slate-200 px-3 py-2 rounded-xl text-xs flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="feedback-text" class="font-medium">Azione registrata</span>
+        </div>
+        <button onclick="undoLastAction()" class="touch-btn bg-slate-800 text-orange-400 hover:bg-slate-700 px-2 py-1 rounded text-xs font-bold border border-slate-700 flex items-center gap-1">
+          <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Annulla (Undo)
+        </button>
+      </div>
+
+      <!-- MACRO-ZONA 2: I 12 CONVOCATI (Grandi Tessere Touch-Friendly) -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5 px-1">
+          <span class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+            <i data-lucide="shield" class="w-3.5 h-3.5 text-orange-500"></i> Seleziona Giocatore Convocato:
+          </span>
+          <span class="text-[11px] text-slate-400">Tocca un atleta per inserire la giocata</span>
+        </div>
+
+        <div id="live-squad-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+          <!-- Rendered dynamically as large touch cards -->
+        </div>
+      </div>
+
+      <!-- MACRO-ZONA 3: PULSANTI AZIONE RAPIDA PER IL GIOCATORE SELEZIONATO -->
+      <div id="action-pad-container" class="bg-slate-900/90 rounded-2xl border border-slate-800 p-3 shadow-xl space-y-3">
+        <!-- Selected Player Banner in Pad -->
+        <div class="flex items-center justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex items-center space-x-2.5">
+            <div id="pad-player-num" class="w-9 h-9 rounded-lg bg-orange-600 text-white font-black text-lg flex items-center justify-center shadow-md">
+              #--
+            </div>
+            <div>
+              <div id="pad-player-name" class="font-bold text-sm text-white">Nessun giocatore selezionato</div>
+              <div id="pad-player-quickstats" class="text-[11px] text-slate-400 font-mono">Punti: 0 | Falli: 0 | Tiri: 0/0</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="deselectPlayer()" class="touch-btn p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 text-xs">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Touch Action Keypad (+1 / -1 Correzione per errore) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          
+          <!-- TIRO DA 2 PUNTI -->
+          <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <div class="text-[11px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
+              <span>Tiro da 2 PT</span>
+              <span id="pad-stat-2pt" class="text-[10px] text-slate-400 font-mono">0/0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button onclick="recordLiveAction('2pt_made')" class="touch-btn bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-black flex flex-col items-center shadow-sm">
+                <span>+2 SEGNATO</span>
+                <span class="text-[9px] opacity-80">(Aggiorna tabellone)</span>
+              </button>
+              <button onclick="recordLiveAction('2pt_miss')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-rose-400 border border-slate-700 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                <span>SBAGLIATO</span>
+                <span class="text-[9px] text-slate-500">(0 Punti)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TIRO DA 3 PUNTI -->
+          <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <div class="text-[11px] font-black uppercase text-orange-400 mb-1 flex items-center justify-between">
+              <span>Tiro da 3 PT</span>
+              <span id="pad-stat-3pt" class="text-[10px] text-slate-400 font-mono">0/0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button onclick="recordLiveAction('3pt_made')" class="touch-btn bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-black flex flex-col items-center shadow-sm">
+                <span>+3 SEGNATO</span>
+                <span class="text-[9px] opacity-80">(Aggiorna tabellone)</span>
+              </button>
+              <button onclick="recordLiveAction('3pt_miss')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-rose-400 border border-slate-700 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                <span>SBAGLIATO</span>
+                <span class="text-[9px] text-slate-500">(0 Punti)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TIRO LIBERO (1 PUNTO) -->
+          <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <div class="text-[11px] font-black uppercase text-blue-400 mb-1 flex items-center justify-between">
+              <span>Tiro Libero (TL)</span>
+              <span id="pad-stat-ft" class="text-[10px] text-slate-400 font-mono">0/0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button onclick="recordLiveAction('ft_made')" class="touch-btn bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-black flex flex-col items-center shadow-sm">
+                <span>+1 SEGNATO</span>
+                <span class="text-[9px] opacity-80">(Aggiorna tabellone)</span>
+              </button>
+              <button onclick="recordLiveAction('ft_miss')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-rose-400 border border-slate-700 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                <span>SBAGLIATO</span>
+                <span class="text-[9px] text-slate-500">(0 Punti)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- RIMBALZI (Offensivo / Difensivo) -->
+          <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <div class="text-[11px] font-black uppercase text-purple-400 mb-1 flex items-center justify-between">
+              <span>Rimbalzi</span>
+              <span id="pad-stat-reb" class="text-[10px] text-slate-400 font-mono">0 O / 0 D</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button onclick="recordLiveAction('reb_off')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-purple-900/40 text-purple-300 border border-purple-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                <span>OFFENSIVO</span>
+                <span class="text-[9px] text-slate-400">+1 Rimb. Off</span>
+              </button>
+              <button onclick="recordLiveAction('reb_def')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-purple-900/40 text-purple-300 border border-purple-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                <span>DIFENSIVO</span>
+                <span class="text-[9px] text-slate-400">+1 Rimb. Dif</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- POSSESSI (Palla Recuperata / Palla Persa) -->
+          <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <div class="text-[11px] font-black uppercase text-cyan-400 mb-1 flex items-center justify-between">
+              <span>Possessi</span>
+              <span id="pad-stat-pos" class="text-[10px] text-slate-400 font-mono">0 Rec / 0 Pers</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button onclick="recordLiveAction('steal')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-cyan-900/40 text-cyan-300 border border-cyan-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                <span>RECUPERATA</span>
+                <span class="text-[9px] text-slate-400">+1 Recupero</span>
+              </button>
+              <button onclick="recordLiveAction('turnover')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-rose-900/40 text-rose-400 border border-rose-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
+                <span>PERSA</span>
+                <span class="text-[9px] text-slate-400">+1 Palla Persa</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ALTRE VOCI (Stoppata / Assist / Fallo) -->
+          <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
+            <div class="text-[11px] font-black uppercase text-yellow-400 mb-1 flex items-center justify-between">
+              <span>Assist / Fallo / Stop</span>
+              <span id="pad-stat-fouls" class="text-[10px] text-rose-400 font-mono font-bold">0 Falli</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1">
+              <button onclick="recordLiveAction('assist')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-yellow-900/40 text-yellow-300 border border-yellow-500/30 py-2.5 rounded-lg text-[11px] font-bold flex flex-col items-center">
+                <span>ASSIST</span>
+                <span class="text-[8px] text-slate-400">+1 Ast</span>
+              </button>
+              <button onclick="recordLiveAction('block')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-indigo-900/40 text-indigo-300 border border-indigo-500/30 py-2.5 rounded-lg text-[11px] font-bold flex flex-col items-center">
+                <span>STOP</span>
+                <span class="text-[8px] text-slate-400">+1 Stoppata</span>
+              </button>
+              <button onclick="recordLiveAction('foul')" class="touch-btn bg-rose-900/40 hover:bg-rose-900/60 active:bg-rose-800 text-rose-300 border border-rose-600/50 py-2.5 rounded-lg text-[11px] font-black flex flex-col items-center">
+                <span>FALLO</span>
+                <span class="text-[8px] text-rose-400">+1 Fallo</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sezione Correzioni / Decremento Rapido (-1) in caso di errore dell'operatore -->
+        <div class="border-t border-slate-800/80 pt-2 flex items-center justify-between">
+          <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Errore di battuta? Correggi singola voce:
+          </span>
+          <div class="flex flex-wrap gap-1">
+            <button onclick="correctStat('2pt_made')" class="touch-btn px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded border border-slate-700 font-medium">-1 2PT Segn</button>
+            <button onclick="correctStat('3pt_made')" class="touch-btn px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded border border-slate-700 font-medium">-1 3PT Segn</button>
+            <button onclick="correctStat('foul')" class="touch-btn px-2 py-1 bg-slate-800 hover:bg-slate-700 text-rose-300 text-[10px] rounded border border-slate-700 font-medium">-1 Fallo</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 4. MODULO: VISUALIZZAZIONE STATISTICHE -->
+    <section id="view-stats" class="hidden space-y-4">
+      <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-3">
+        
+        <!-- Toggle Tabs: Giocatore vs Squadra -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div class="flex space-x-1.5">
+            <button onclick="switchStatsSubTab('team')" id="stats-tab-team" class="touch-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-orange-600 text-white">
+              Vista Squadra
+            </button>
+            <button onclick="switchStatsSubTab('player')" id="stats-tab-player" class="touch-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-slate-800 text-slate-400 border border-slate-700">
+              Vista Giocatore
+            </button>
+          </div>
+
+          <!-- Quick Refresh / Export inside stats -->
+          <button onclick="renderStatisticsView()" class="touch-btn p-1.5 bg-slate-800 text-slate-400 rounded-lg hover:text-white">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- FILTRI (Singola Partita o Arco Temporale) -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs">
+          <div class="sm:col-span-4">
+            <label class="block text-slate-400 font-semibold mb-1">Filtro Partita</label>
+            <select id="stats-filter-match" onchange="renderStatisticsView()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white font-medium focus:border-orange-500">
+              <option value="all">Tutte le Partite</option>
+              <!-- Filled via JS -->
+            </select>
+          </div>
+          <div class="sm:col-span-4">
+            <label class="block text-slate-400 font-semibold mb-1">Da Data (Inizio)</label>
+            <input type="date" id="stats-filter-date-start" onchange="renderStatisticsView()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white">
+          </div>
+          <div class="sm:col-span-4">
+            <label class="block text-slate-400 font-semibold mb-1">A Data (Fine)</label>
+            <input type="date" id="stats-filter-date-end" onchange="renderStatisticsView()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-white">
+          </div>
+        </div>
+
+        <!-- SOTTO-VISTA: STATISTICHE SQUADRA -->
+        <div id="stats-content-team" class="space-y-3">
+          <!-- Overview KPI Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <div class="text-[10px] font-bold uppercase text-slate-400">Punti Totali</div>
+              <div id="team-stat-pts" class="text-2xl font-black font-mono text-orange-400 mt-1">0</div>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <div class="text-[10px] font-bold uppercase text-slate-400">Rimbalzi Totali</div>
+              <div id="team-stat-reb" class="text-2xl font-black font-mono text-purple-400 mt-1">0</div>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <div class="text-[10px] font-bold uppercase text-slate-400">Assist Totali</div>
+              <div id="team-stat-ast" class="text-2xl font-black font-mono text-yellow-400 mt-1">0</div>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+              <div class="text-[10px] font-bold uppercase text-slate-400">Palle Perse</div>
+              <div id="team-stat-to" class="text-2xl font-black font-mono text-rose-400 mt-1">0</div>
+            </div>
+          </div>
+
+          <!-- Percentuali di Squadra e Breakdown -->
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Efficienza al Tiro di Squadra</h4>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+              <div class="p-2 bg-slate-900/80 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">Tiri da 2 PT</span>
+                <span id="team-pct-2pt" class="text-base font-black font-mono text-emerald-400">0%</span>
+                <span id="team-raw-2pt" class="block text-[10px] text-slate-500 font-mono">0/0</span>
+              </div>
+              <div class="p-2 bg-slate-900/80 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">Tiri da 3 PT</span>
+                <span id="team-pct-3pt" class="text-base font-black font-mono text-orange-400">0%</span>
+                <span id="team-raw-3pt" class="block text-[10px] text-slate-500 font-mono">0/0</span>
+              </div>
+              <div class="p-2 bg-slate-900/80 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">Tiri Liberi</span>
+                <span id="team-pct-ft" class="text-base font-black font-mono text-blue-400">0%</span>
+                <span id="team-raw-ft" class="block text-[10px] text-slate-500 font-mono">0/0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabella Completa Roster Stats -->
+          <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
+                <tr>
+                  <th class="p-2.5"># Giocatore</th>
+                  <th class="p-2.5 text-center">PTS</th>
+                  <th class="p-2.5 text-center">2PT % (R/T)</th>
+                  <th class="p-2.5 text-center">3PT % (R/T)</th>
+                  <th class="p-2.5 text-center">TL % (R/T)</th>
+                  <th class="p-2.5 text-center">REB (O+D)</th>
+                  <th class="p-2.5 text-center">AST</th>
+                  <th class="p-2.5 text-center">REC</th>
+                  <th class="p-2.5 text-center">PER</th>
+                  <th class="p-2.5 text-center">STP</th>
+                  <th class="p-2.5 text-center">FALLI</th>
+                </tr>
+              </thead>
+              <tbody id="team-table-body" class="divide-y divide-slate-900 font-mono text-slate-300">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SOTTO-VISTA: STATISTICHE SINGOLO GIOCATORE -->
+        <div id="stats-content-player" class="hidden space-y-3">
+          <div class="flex items-center space-x-2">
+            <label class="text-xs font-semibold text-slate-400">Seleziona Giocatore:</label>
+            <select id="stats-select-player" onchange="renderPlayerSpecificStats()" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white font-bold flex-1">
+              <!-- Filled via JS -->
+            </select>
+          </div>
+
+          <!-- Scheda Dettagliata Giocatore -->
+          <div id="player-stat-card" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div class="flex items-center space-x-3">
+                <div id="pcard-number" class="w-10 h-10 rounded-xl bg-orange-600 font-black text-xl flex items-center justify-center text-white">#0</div>
+                <div>
+                  <h3 id="pcard-name" class="font-bold text-base text-white">Seleziona Giocatore</h3>
+                  <p id="pcard-info" class="text-xs text-slate-400">Anno Nascita: --</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Totale Punti</span>
+                <div id="pcard-pts" class="text-2xl font-black font-mono text-orange-400">0</div>
+              </div>
+            </div>
+
+            <!-- Percentuali di tiro -->
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 font-bold block">Tiro da 2 PT</span>
+                <span id="pcard-pct-2pt" class="text-xl font-black font-mono text-emerald-400">0.0%</span>
+                <span id="pcard-raw-2pt" class="text-[11px] text-slate-400 block font-mono">0/0</span>
+              </div>
+              <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 font-bold block">Tiro da 3 PT</span>
+                <span id="pcard-pct-3pt" class="text-xl font-black font-mono text-orange-400">0.0%</span>
+                <span id="pcard-raw-3pt" class="text-[11px] text-slate-400 block font-mono">0/0</span>
+              </div>
+              <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 font-bold block">Tiri Liberi</span>
+                <span id="pcard-pct-ft" class="text-xl font-black font-mono text-blue-400">0.0%</span>
+                <span id="pcard-raw-ft" class="text-[11px] text-slate-400 block font-mono">0/0</span>
+              </div>
+            </div>
+
+            <!-- Statistiche secondarie in griglia -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <div class="p-2 bg-slate-900 rounded-lg flex justify-between items-center">
+                <span class="text-slate-400">Rimbalzi Totali:</span>
+                <span id="pcard-reb" class="font-mono font-bold text-purple-400">0 (0 Off, 0 Dif)</span>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg flex justify-between items-center">
+                <span class="text-slate-400">Assist:</span>
+                <span id="pcard-ast" class="font-mono font-bold text-yellow-400">0</span>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg flex justify-between items-center">
+                <span class="text-slate-400">Palle Recuperate:</span>
+                <span id="pcard-stl" class="font-mono font-bold text-cyan-400">0</span>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg flex justify-between items-center">
+                <span class="text-slate-400">Palle Perse:</span>
+                <span id="pcard-to" class="font-mono font-bold text-rose-400">0</span>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg flex justify-between items-center">
+                <span class="text-slate-400">Stoppate:</span>
+                <span id="pcard-blk" class="font-mono font-bold text-indigo-400">0</span>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg flex justify-between items-center">
+                <span class="text-slate-400">Falli Commessi:</span>
+                <span id="pcard-foul" class="font-mono font-bold text-rose-500">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Touch Navigation Bar (Mobile Thumb Zone Friendly) -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-30 px-2 py-1.5 shadow-2xl">
+    <div class="max-w-md mx-auto grid grid-cols-4 gap-1">
+      <button onclick="switchTab('roster')" id="nav-btn-roster" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">Roster</span>
+      </button>
+      <button onclick="switchTab('match-setup')" id="nav-btn-setup" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="settings" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">Partita</span>
+      </button>
+      <button onclick="switchTab('live-scout')" id="nav-btn-live" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-orange-600 text-white shadow-md shadow-orange-600/30 transition-colors">
+        <i data-lucide="activity" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-extrabold tracking-tight">LIVE SCOUT</span>
+      </button>
+      <button onclick="switchTab('stats')" id="nav-btn-stats" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="bar-chart-2" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">Statistiche</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MODALE: Nuovo / Modifica Giocatore -->
+  <div id="player-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 id="player-modal-title" class="font-bold text-white text-base">Aggiungi Giocatore</h3>
+        <button onclick="closePlayerModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="player-form" onsubmit="savePlayerForm(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="pf-id">
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1">Numero Maglia (Univoco) *</label>
+          <input type="number" id="pf-number" min="0" max="99" required placeholder="Es. 23" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-base font-bold text-orange-400 focus:border-orange-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1">Nome *</label>
+          <input type="text" id="pf-name" required placeholder="Es. Marco" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1">Cognome *</label>
+          <input type="text" id="pf-surname" required placeholder="Es. Rossi" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1">Anno di Nascita</label>
+          <input type="number" id="pf-birthyear" min="1950" max="2024" placeholder="Es. 2004" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 focus:outline-none">
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closePlayerModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 font-semibold">Annulla</button>
+          <button type="submit" class="flex-1 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold rounded-lg shadow-md shadow-orange-600/30">Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE: Esportazione Dati (JSON / CSV) -->
+  <div id="export-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-4 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="font-bold text-white text-base flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-orange-500"></i> Esportazione Dati Offline
+        </h3>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Tutti i dati sono archiviati in locale nel tuo browser (LocalStorage). Da qui puoi scaricare l'intero database per backup, invio al coach o analisi statistica su foglio di calcolo.
+      </p>
+
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <button onclick="exportDataJSON()" class="touch-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl flex flex-col items-center text-center space-y-1">
+          <i data-lucide="file-json" class="w-6 h-6 text-orange-400"></i>
+          <span class="text-xs font-bold text-white">Esporta JSON</span>
+          <span class="text-[10px] text-slate-400">Database Completo</span>
+        </button>
+
+        <button onclick="exportStatsCSV()" class="touch-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl flex flex-col items-center text-center space-y-1">
+          <i data-lucide="file-spreadsheet" class="w-6 h-6 text-emerald-400"></i>
+          <span class="text-xs font-bold text-white">Esporta CSV</span>
+          <span class="text-[10px] text-slate-400">Compatibile Excel/Sheets</span>
+        </button>
+      </div>
+
+      <!-- Import Section for complete offline recovery -->
+      <div class="pt-3 border-t border-slate-800 space-y-2">
+        <label class="text-[11px] font-semibold text-slate-400 block">Importa Backup JSON:</label>
+        <input type="file" id="import-file-input" accept=".json" onchange="importDataJSON(event)" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700">
+      </div>
+
+      <div class="pt-2">
+        <button onclick="clearAllDataPrompt()" class="w-full py-2 text-rose-400 hover:bg-rose-950/30 rounded-lg text-xs font-semibold text-center border border-rose-900/40">
+          ⚠️ Reset Completo Database Locale
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION CORE -->
+  <script>
+    /* ==========================================================================
+       STORAGE KEYS & INITIAL DATA ARCHITECTURE
+       ========================================================================== */
+    const STORAGE_KEY_ROSTER = 'basket_scout_roster_v1';
+    const STORAGE_KEY_MATCHES = 'basket_scout_matches_v1';
+    const STORAGE_KEY_ACTIVE_MATCH = 'basket_scout_active_id_v1';
+
+    // Application state
+    let roster = [];
+    let matches = [];
+    let activeMatchId = null;
+    let selectedPlayerId = null;
+    let actionHistory = []; // Stack for undo operation
+
+    // Initialize application
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStorage();
+      if (roster.length === 0) {
+        seedInitialRosterIfEmpty();
+      }
+      renderRosterList();
+      renderSetupView();
+      initActiveMatch();
+      lucide.createIcons();
+    });
+
+    /* ==========================================================================
+       LOCAL STORAGE & OFFLINE PERSISTENCE
+       ========================================================================== */
+    function loadStorage() {
+      try {
+        const storedRoster = localStorage.getItem(STORAGE_KEY_ROSTER);
+        roster = storedRoster ? JSON.parse(storedRoster) : [];
+
+        const storedMatches = localStorage.getItem(STORAGE_KEY_MATCHES);
+        matches = storedMatches ? JSON.parse(storedMatches) : [];
+
+        activeMatchId = localStorage.getItem(STORAGE_KEY_ACTIVE_MATCH);
+      } catch (e) {
+        console.error('Errore lettura LocalStorage:', e);
+      }
+    }
+
+    function saveStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY_ROSTER, JSON.stringify(roster));
+        localStorage.setItem(STORAGE_KEY_MATCHES, JSON.stringify(matches));
+        if (activeMatchId) {
+          localStorage.setItem(STORAGE_KEY_ACTIVE_MATCH, activeMatchId);
+        } else {
+          localStorage.removeItem(STORAGE_KEY_ACTIVE_MATCH);
+        }
+      } catch (e) {
+        console.error('Errore scrittura LocalStorage:', e);
+      }
+    }
+
+    function seedInitialRosterIfEmpty() {
+      const samplePlayers = [
+        { id: 'p1', number: 4, name: 'Matteo', surname: 'Conti', birthYear: 2004 },
+        { id: 'p2', number: 7, name: 'Davide', surname: 'Moretti', birthYear: 2002 },
+        { id: 'p3', number: 9, name: 'Alessandro', surname: 'Gentile', birthYear: 1999 },
+        { id: 'p4', number: 11, name: 'Simone', surname: 'Fontecchio', birthYear: 2001 },
+        { id: 'p5', number: 13, name: 'Giacomo', surname: 'De Rossi', birthYear: 2003 },
+        { id: 'p6', number: 15, name: 'Luigi', surname: 'Datome', birthYear: 1998 },
+        { id: 'p7', number: 18, name: 'Niccolò', surname: 'Melli', birthYear: 2000 },
+        { id: 'p8', number: 21, name: 'Achille', surname: 'Polonara', birthYear: 2001 },
+        { id: 'p9', number: 23, name: 'Marco', surname: 'Belinelli', birthYear: 1997 },
+        { id: 'p10', number: 30, name: 'Stefano', surname: 'Tonut', birthYear: 2002 },
+        { id: 'p11', number: 33, name: 'Amedeo', surname: 'Tessitori', birthYear: 2000 },
+        { id: 'p12', number: 45, name: 'Danilo', surname: 'Gallinari', birthYear: 1998 }
+      ];
+      roster = samplePlayers;
+      saveStorage();
+    }
+
+    /* ==========================================================================
+       TAB NAVIGATION
+       ========================================================================== */
+    function switchTab(tabId) {
+      document.getElementById('view-roster').classList.add('hidden');
+      document.getElementById('view-match-setup').classList.add('hidden');
+      document.getElementById('view-live-scout').classList.add('hidden');
+      document.getElementById('view-stats').classList.add('hidden');
+
+      const tabs = ['roster', 'setup', 'live', 'stats'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`nav-btn-${t}`);
+        if (btn) {
+          btn.className = "touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-white transition-colors";
+        }
+      });
+
+      if (tabId === 'roster') {
+        document.getElementById('view-roster').classList.remove('hidden');
+        document.getElementById('nav-btn-roster').className = "touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-slate-800 text-orange-400 border border-slate-700";
+        renderRosterList();
+      } else if (tabId === 'match-setup') {
+        document.getElementById('view-match-setup').classList.remove('hidden');
+        document.getElementById('nav-btn-setup').className = "touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-slate-800 text-orange-400 border border-slate-700";
+        renderSetupView();
+      } else if (tabId === 'live-scout') {
+        document.getElementById('view-live-scout').classList.remove('hidden');
+        document.getElementById('nav-btn-live').className = "touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-orange-600 text-white shadow-md shadow-orange-600/30";
+        renderLiveScoutView();
+      } else if (tabId === 'stats') {
+        document.getElementById('view-stats').classList.remove('hidden');
+        document.getElementById('nav-btn-stats').className = "touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-slate-800 text-orange-400 border border-slate-700";
+        renderStatisticsView();
+      }
+      lucide.createIcons();
+    }
+
+    /* ==========================================================================
+       MODULO 1: ROSTER (ANAGRAFICA)
+       ========================================================================== */
+    function renderRosterList() {
+      const grid = document.getElementById('roster-grid');
+      const emptyState = document.getElementById('roster-empty-state');
+      grid.innerHTML = '';
+
+      if (roster.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      // Sort by jersey number
+      const sortedRoster = [...roster].sort((a, b) => Number(a.number) - Number(b.number));
+
+      sortedRoster.forEach(player => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm";
+        card.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #${player.number}
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">${player.surname} ${player.name}</div>
+              <div class="text-[11px] text-slate-400">Anno: ${player.birthYear || 'N/D'}</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('${player.id}')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <i data-lucide="edit-2" class="w-4 h-4"></i>
+            </button>
+            <button onclick="deletePlayer('${player.id}')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <i data-lucide="trash" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function openPlayerModal(playerId = null) {
+      document.getElementById('player-form').reset();
+      document.getElementById('pf-id').value = '';
+      if (playerId) {
+        const player = roster.find(p => p.id === playerId);
+        if (player) {
+          document.getElementById('pf-id').value = player.id;
+          document.getElementById('pf-number').value = player.number;
+          document.getElementById('pf-name').value = player.name;
+          document.getElementById('pf-surname').value = player.surname;
+          document.getElementById('pf-birthYear').value = player.birthYear || '';
+          document.getElementById('player-modal-title').textContent = "Modifica Giocatore";
+        }
+      } else {
+        document.getElementById('player-modal-title').textContent = "Nuovo Giocatore";
+      }
+      document.getElementById('player-modal').classList.remove('hidden');
+    }
+
+    function closePlayerModal() {
+      document.getElementById('player-modal').classList.add('hidden');
+    }
+
+    function savePlayerForm(event) {
+      event.preventDefault();
+      const id = document.getElementById('pf-id').value;
+      const number = parseInt(document.getElementById('pf-number').value, 10);
+      const name = document.getElementById('pf-name').value.trim();
+      const surname = document.getElementById('pf-surname').value.trim();
+      const birthYear = document.getElementById('pf-birthyear').value ? parseInt(document.getElementById('pf-birthyear').value, 10) : null;
+
+      // Unique jersey number validation
+      const numCollision = roster.find(p => p.number === number && p.id !== id);
+      if (numCollision) {
+        alert(`Il numero #${number} è già assegnato a ${numCollision.surname} ${numCollision.name}! I numeri devono essere univoci.`);
+        return;
+      }
+
+      if (id) {
+        // Edit existing
+        const idx = roster.findIndex(p => p.id === id);
+        if (idx !== -1) {
+          roster[idx] = { id, number, name, surname, birthYear };
+        }
+      } else {
+        // Create new
+        const newPlayer = {
+          id: 'p_' + Date.now(),
+          number,
+          name,
+          surname,
+          birthYear
+        };
+        roster.push(newPlayer);
+      }
+
+      saveStorage();
+      closePlayerModal();
+      renderRosterList();
+    }
+
+    function editPlayer(id) {
+      openPlayerModal(id);
+    }
+
+    function deletePlayer(id) {
+      if (confirm('Sei sicuro di voler eliminare questo giocatore dal roster?')) {
+        roster = roster.filter(p => p.id !== id);
+        saveStorage();
+        renderRosterList();
+      }
+    }
+
+    function seedSampleRoster() {
+      seedInitialRosterIfEmpty();
+      renderRosterList();
+    }
+
+    /* ==========================================================================
+       MODULO 2: CONFIGURAZIONE PARTITA (12 CONVOCATI)
+       ========================================================================== */
+    let selectedSquadIds = new Set();
+
+    function renderSetupView() {
+      const checklist = document.getElementById('setup-players-checklist');
+      checklist.innerHTML = '';
+
+      // Default date
+      const dateInput = document.getElementById('setup-match-datetime');
+      if (!dateInput.value) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        dateInput.value = now.toISOString().slice(0, 16);
+      }
+
+      // Resume button visibility
+      const resumeBtn = document.getElementById('btn-resume-scout');
+      if (activeMatchId && matches.some(m => m.id === activeMatchId)) {
+        resumeBtn.classList.remove('hidden');
+      } else {
+        resumeBtn.classList.add('hidden');
+      }
+
+      // Populate players checklist
+      const sorted = [...roster].sort((a, b) => a.number - b.number);
+      sorted.forEach(p => {
+        const isChecked = selectedSquadIds.has(p.id);
+        const item = document.createElement('label');
+        item.className = `flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn ${
+          isChecked ? 'bg-orange-950/40 border-orange-500/60 text-white' : 'bg-slate-900 border-slate-800 text-slate-300'
+        }`;
+        item.innerHTML = `
+          <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSquadPlayer('${p.id}')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#${p.number}</span>
+          <span class="text-xs font-semibold truncate">${p.surname}</span>
+        `;
+        checklist.appendChild(item);
+      });
+
+      updateSelectedSquadCount();
+      renderSavedMatchesList();
+    }
+
+    function toggleSquadPlayer(id) {
+      if (selectedSquadIds.has(id)) {
+        selectedSquadIds.delete(id);
+      } else {
+        if (selectedSquadIds.size >= 12) {
+          alert('Attenzione: Il regolamento prevede massimo 12 giocatori a referto per la partita.');
+          renderSetupView();
+          return;
+        }
+        selectedSquadIds.add(id);
+      }
+      renderSetupView();
+    }
+
+    function selectAllRoster(first12 = true) {
+      selectedSquadIds.clear();
+      if (first12) {
+        const sorted = [...roster].sort((a, b) => a.number - b.number).slice(0, 12);
+        sorted.forEach(p => selectedSquadIds.add(p.id));
+      }
+      renderSetupView();
+    }
+
+    function updateSelectedSquadCount() {
+      const badge = document.getElementById('selected-convocati-badge');
+      const count = selectedSquadIds.size;
+      badge.textContent = `${count} / 12`;
+      if (count === 12) {
+        badge.className = "px-2 py-0.5 rounded-full text-xs font-extrabold bg-emerald-950 text-emerald-400 border border-emerald-700";
+      } else {
+        badge.className = "px-2 py-0.5 rounded-full text-xs font-extrabold bg-slate-800 text-orange-400 border border-slate-700";
+      }
+    }
+
+    function startScoutingSession() {
+      const matchNum = document.getElementById('setup-match-num').value.trim() || `GARA-${matches.length + 1}`;
+      const matchDate = document.getElementById('setup-match-datetime').value || new Date().toISOString();
+      const opponent = document.getElementById('setup-opponent-name').value.trim() || 'Avversario';
+
+      if (selectedSquadIds.size === 0) {
+        alert('Seleziona almeno un giocatore tra i convocati per iniziare lo scouting.');
+        return;
+      }
+      if (selectedSquadIds.size > 12) {
+        alert('Hai selezionato più di 12 giocatori! Deseleziona quelli in eccesso per rispettare i 12 convocati.');
+        return;
+      }
+
+      // Create new Match object
+      const newMatch = {
+        id: 'match_' + Date.now(),
+        matchNumber: matchNum,
+        dateTime: matchDate,
+        opponent: opponent,
+        quarter: 1,
+        homeScore: 0,
+        awayScore: 0,
+        rosterSelectedIds: Array.from(selectedSquadIds),
+        events: [] // All live actions
+      };
+
+      matches.unshift(newMatch);
+      activeMatchId = newMatch.id;
+      actionHistory = [];
+      saveStorage();
+
+      switchTab('live-scout');
+    }
+
+    function resumeActiveMatch() {
+      if (activeMatchId) {
+        switchTab('live-scout');
+      }
+    }
+
+    function renderSavedMatchesList() {
+      const list = document.getElementById('saved-matches-list');
+      list.innerHTML = '';
+      if (matches.length === 0) {
+        list.innerHTML = '<p class="text-slate-500 italic">Nessuna partita archiviata finora.</p>';
+        return;
+      }
+
+      matches.slice(0, 5).forEach(m => {
+        const item = document.createElement('div');
+        item.className = "p-2 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between";
+        const dateStr = new Date(m.dateTime).toLocaleDateString('it-IT');
+        item.innerHTML = `
+          <div>
+            <span class="font-bold text-white">${m.matchNumber}</span>: Casa vs <span class="text-orange-400 font-semibold">${m.opponent}</span>
+            <span class="text-[10px] text-slate-500 block">${dateStr} • Finale: ${m.homeScore} - ${m.awayScore}</span>
+          </div>
+          <button onclick="setActiveMatch('${m.id}')" class="touch-btn px-2.5 py-1 bg-slate-800 text-xs font-bold text-slate-300 rounded hover:bg-slate-700">
+            ${m.id === activeMatchId ? 'Attiva' : 'Carica'}
+          </button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function setActiveMatch(id) {
+      activeMatchId = id;
+      saveStorage();
+      renderSetupView();
+      switchTab('live-scout');
+    }
+
+    /* ==========================================================================
+       MODULO 3: LIVE SCOUTING TOUCH INTERFACE
+       ========================================================================== */
+    function getActiveMatch() {
+      if (!activeMatchId) return null;
+      return matches.find(m => m.id === activeMatchId) || null;
+    }
+
+    function initActiveMatch() {
+      const match = getActiveMatch();
+      if (!match && matches.length > 0) {
+        activeMatchId = matches[0].id;
+      }
+    }
+
+    function renderLiveScoutView() {
+      let match = getActiveMatch();
+      if (!match) {
+        // Auto create quick match if empty
+        if (roster.length < 12) {
+          seedInitialRosterIfEmpty();
+        }
+        const first12 = roster.slice(0, 12).map(p => p.id);
+        const autoMatch = {
+          id: 'match_' + Date.now(),
+          matchNumber: 'GARA-01',
+          dateTime: new Date().toISOString(),
+          opponent: 'Ospiti',
+          quarter: 1,
+          homeScore: 0,
+          awayScore: 0,
+          rosterSelectedIds: first12,
+          events: []
+        };
+        matches.unshift(autoMatch);
+        activeMatchId = autoMatch.id;
+        match = autoMatch;
+        saveStorage();
+      }
+
+      // Update header info & quick badges
+      document.getElementById('live-header-sub').textContent = `${match.matchNumber} vs ${match.opponent}`;
+      document.getElementById('live-match-label').textContent = `${match.matchNumber}`;
+      document.getElementById('live-opponent-label').textContent = match.opponent.toUpperCase();
+
+      document.getElementById('live-home-score').textContent = match.homeScore;
+      document.getElementById('live-away-score').textContent = match.awayScore;
+      document.getElementById('badge-home').textContent = match.homeScore;
+      document.getElementById('badge-away').textContent = match.awayScore;
+      document.getElementById('quick-score-badge').classList.remove('hidden');
+
+      // Update Quarter Buttons & Halftime alert
+      updateQuarterDisplay(match.quarter);
+
+      // Render 12 Convocati Grid
+      renderSquadButtons(match);
+
+      // Render Action Keypad with current selected player
+      updateActionPad();
+    }
+
+    function updateQuarterDisplay(q) {
+      const quarters = [1, 2, 3, 4, 'OT'];
+      quarters.forEach(item => {
+        const btn = document.getElementById(`btn-q${item}`);
+        if (btn) {
+          if (item == q) {
+            btn.className = "touch-btn py-2 text-xs font-black rounded-lg border bg-orange-600 border-orange-500 text-white shadow-md";
+          } else {
+            btn.className = "touch-btn py-2 text-xs font-black rounded-lg border bg-slate-800 border-slate-700 text-slate-400";
+          }
+        }
+      });
+
+      const qBadge = document.getElementById('current-q-badge');
+      qBadge.textContent = q === 'OT' ? 'SUPPL.' : `Q${q}`;
+
+      // Requisito: Segnalare visivamente l'intervallo lungo dopo il 2° quarto
+      const halftimeBanner = document.getElementById('halftime-banner');
+      if (q === 3 || q === 'HALF') {
+        halftimeBanner.classList.remove('hidden');
+      } else {
+        halftimeBanner.classList.add('hidden');
+      }
+    }
+
+    function setQuarter(q) {
+      const match = getActiveMatch();
+      if (!match) return;
+
+      const previousQ = match.quarter;
+      match.quarter = q;
+
+      // Se passiamo al 3° quarto da 2°, mostriamo un toast/avviso di intervallo
+      if (previousQ === 2 && q === 3) {
+        showFeedbackToast('⏸️ Fine 2° Quarto: Intervallo lungo terminato, inizia il 3° Quarto!');
+      } else {
+        showFeedbackToast(`Passato al ${q === 'OT' ? 'Tempo Supplementare' : q + '° Quarto'}`);
+      }
+
+      saveStorage();
+      updateQuarterDisplay(q);
+    }
+
+    function adjustTeamScore(team, delta) {
+      const match = getActiveMatch();
+      if (!match) return;
+      if (team === 'home') {
+        match.homeScore = Math.max(0, match.homeScore + delta);
+        document.getElementById('live-home-score').textContent = match.homeScore;
+        document.getElementById('badge-home').textContent = match.homeScore;
+      } else {
+        match.awayScore = Math.max(0, match.awayScore + delta);
+        document.getElementById('live-away-score').textContent = match.awayScore;
+        document.getElementById('badge-away').textContent = match.awayScore;
+      }
+      saveStorage();
+    }
+
+    function renderSquadButtons(match) {
+      const grid = document.getElementById('live-squad-grid');
+      grid.innerHTML = '';
+
+      const squadPlayers = roster.filter(p => match.rosterSelectedIds.includes(p.id));
+      squadPlayers.sort((a, b) => a.number - b.number);
+
+      // Auto-select first player if none is selected
+      if (!selectedPlayerId && squadPlayers.length > 0) {
+        selectedPlayerId = squadPlayers[0].id;
+      }
+
+      squadPlayers.forEach(p => {
+        const isSelected = p.id === selectedPlayerId;
+        // Compute player quick points & fouls in this match
+        const stats = computePlayerMatchStats(p.id, match);
+
+        const btn = document.createElement('button');
+        btn.onclick = () => selectLivePlayer(p.id);
+        btn.className = `touch-btn p-2 rounded-xl border flex flex-col items-center justify-between min-h-[78px] transition-all relative ${
+          isSelected 
+            ? 'bg-orange-600 border-white text-white shadow-lg ring-2 ring-orange-400 scale-[1.02]' 
+            : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+        }`;
+
+        // Foul indicator dots
+        let foulDots = '';
+        for (let i = 0; i < Math.min(stats.fouls, 5); i++) {
+          foulDots += `<span class="w-1.5 h-1.5 rounded-full ${i === 4 ? 'bg-rose-500' : 'bg-amber-400'}"></span>`;
+        }
+
+        btn.innerHTML = `
+          <div class="flex items-center justify-between w-full">
+            <span class="text-xs font-black font-mono px-1 py-0.5 rounded ${isSelected ? 'bg-black/30' : 'bg-slate-800 text-orange-400'}">#${p.number}</span>
+            <div class="flex gap-0.5">${foulDots}</div>
+          </div>
+          <div class="font-bold text-xs truncate max-w-full my-0.5">${p.surname}</div>
+          <div class="text-[10px] font-mono opacity-90">${stats.points} PTS</div>
+        `;
+        grid.appendChild(btn);
+      });
+    }
+
+    function selectLivePlayer(id) {
+      selectedPlayerId = id;
+      const match = getActiveMatch();
+      if (match) {
+        renderSquadButtons(match);
+        updateActionPad();
+      }
+    }
+
+    function deselectPlayer() {
+      selectedPlayerId = null;
+      const match = getActiveMatch();
+      if (match) {
+        renderSquadButtons(match);
+        updateActionPad();
+      }
+    }
+
+    function updateActionPad() {
+      const match = getActiveMatch();
+      const pNum = document.getElementById('pad-player-num');
+      const pName = document.getElementById('pad-player-name');
+      const pQuick = document.getElementById('pad-player-quickstats');
+
+      if (!selectedPlayerId || !match) {
+        pNum.textContent = '#--';
+        pName.textContent = 'Tocca un giocatore in alto';
+        pQuick.textContent = 'Seleziona un atleta convocato per registrarne le azioni';
+        return;
+      }
+
+      const player = roster.find(p => p.id === selectedPlayerId);
+      if (!player) return;
+
+      const st = computePlayerMatchStats(player.id, match);
+
+      pNum.textContent = `#${player.number}`;
+      pName.textContent = `${player.surname} ${player.name}`;
+      pQuick.textContent = `Punti: ${st.points} | Falli: ${st.fouls} | Tiri Totali: ${st.made2 + st.made3 + st.madeFt}/${st.att2 + st.att3 + st.attFt}`;
+
+      document.getElementById('pad-stat-2pt').textContent = `${st.made2}/${st.att2}`;
+      document.getElementById('pad-stat-3pt').textContent = `${st.made3}/${st.att3}`;
+      document.getElementById('pad-stat-ft').textContent = `${st.madeFt}/${st.attFt}`;
+      document.getElementById('pad-stat-reb').textContent = `${st.rebOff} O / ${st.rebDef} D`;
+      document.getElementById('pad-stat-pos').textContent = `${st.steals} Rec / ${st.turnovers} Per`;
+      document.getElementById('pad-stat-fouls').textContent = `${st.fouls} Falli commessi`;
+    }
+
+    function recordLiveAction(actionType) {
+      const match = getActiveMatch();
+      if (!match) return;
+      if (!selectedPlayerId) {
+        alert('Seleziona prima un giocatore a cui attribuire l\'azione.');
+        return;
+      }
+
+      const player = roster.find(p => p.id === selectedPlayerId);
+      const actionEvent = {
+        id: 'ev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        matchId: match.id,
+        playerId: selectedPlayerId,
+        quarter: match.quarter,
+        timestamp: new Date().toISOString(),
+        action: actionType
+      };
+
+      // Scoreboard automatic update
+      let scoreAdd = 0;
+      let label = '';
+      switch (actionType) {
+        case '2pt_made':
+          scoreAdd = 2;
+          label = `2 Punti Segnati da #${player.number} ${player.surname}`;
+          break;
+        case '2pt_miss':
+          label = `Tiro da 2 Sbagliato: #${player.number} ${player.surname}`;
+          break;
+        case '3pt_made':
+          scoreAdd = 3;
+          label = `3 Punti a Bersaglio! #${player.number} ${player.surname}`;
+          break;
+        case '3pt_miss':
+          label = `Tiro da 3 Sbagliato: #${player.number} ${player.surname}`;
+          break;
+        case 'ft_made':
+          scoreAdd = 1;
+          label = `Tiro Libero Segnato (+1) da #${player.number}`;
+          break;
+        case 'ft_miss':
+          label = `Tiro Libero Sbagliato da #${player.number}`;
+          break;
+        case 'reb_off':
+          label = `Rimbalzo Offensivo per #${player.number}`;
+          break;
+        case 'reb_def':
+          label = `Rimbalzo Difensivo per #${player.number}`;
+          break;
+        case 'steal':
+          label = `Palla Recuperata da #${player.number}`;
+          break;
+        case 'turnover':
+          label = `Palla Persa da #${player.number}`;
+          break;
+        case 'assist':
+          label = `Assist per #${player.number}`;
+          break;
+        case 'block':
+          label = `Stoppata di #${player.number}`;
+          break;
+        case 'foul':
+          label = `Fallo commesso da #${player.number}`;
+          break;
+      }
+
+      match.events.push(actionEvent);
+      if (scoreAdd > 0) {
+        match.homeScore += scoreAdd;
+        document.getElementById('live-home-score').textContent = match.homeScore;
+        document.getElementById('badge-home').textContent = match.homeScore;
+      }
+
+      actionHistory.push({ event: actionEvent, scoreAdded: scoreAdd });
+      saveStorage();
+
+      showFeedbackToast(label);
+      renderSquadButtons(match);
+      updateActionPad();
+    }
+
+    function correctStat(actionType) {
+      const match = getActiveMatch();
+      if (!match || !selectedPlayerId) return;
+
+      // Find last event of this type for this player
+      const idx = [...match.events].reverse().findIndex(e => e.playerId === selectedPlayerId && e.action === actionType);
+      if (idx === -1) {
+        showFeedbackToast('Nessuna statistica di questo tipo trovata per il giocatore.', true);
+        return;
+      }
+
+      const realIndex = match.events.length - 1 - idx;
+      const removedEvent = match.events.splice(realIndex, 1)[0];
+
+      if (actionType === '2pt_made') match.homeScore = Math.max(0, match.homeScore - 2);
+      if (actionType === '3pt_made') match.homeScore = Math.max(0, match.homeScore - 3);
+      if (actionType === 'ft_made') match.homeScore = Math.max(0, match.homeScore - 1);
+
+      document.getElementById('live-home-score').textContent = match.homeScore;
+      document.getElementById('badge-home').textContent = match.homeScore;
+
+      saveStorage();
+      showFeedbackToast('Statistica corretta e rimossa (-1)', false);
+      renderSquadButtons(match);
+      updateActionPad();
+    }
+
+    function undoLastAction() {
+      const match = getActiveMatch();
+      if (!match || match.events.length === 0) return;
+
+      const lastHistory = actionHistory.pop();
+      if (lastHistory) {
+        const evIdx = match.events.findIndex(e => e.id === lastHistory.event.id);
+        if (evIdx !== -1) {
+          match.events.splice(evIdx, 1);
+        }
+        if (lastHistory.scoreAdded > 0) {
+          match.homeScore = Math.max(0, match.homeScore - lastHistory.scoreAdded);
+          document.getElementById('live-home-score').textContent = match.homeScore;
+          document.getElementById('badge-home').textContent = match.homeScore;
+        }
+      } else {
+        // Fallback: pop last event
+        const popped = match.events.pop();
+        if (popped.action === '2pt_made') match.homeScore = Math.max(0, match.homeScore - 2);
+        if (popped.action === '3pt_made') match.homeScore = Math.max(0, match.homeScore - 3);
+        if (popped.action === 'ft_made') match.homeScore = Math.max(0, match.homeScore - 1);
+        document.getElementById('live-home-score').textContent = match.homeScore;
+      }
+
+      saveStorage();
+      showFeedbackToast('Ultima azione annullata con successo!');
+      renderSquadButtons(match);
+      updateActionPad();
+    }
+
+    function showFeedbackToast(msg, isError = false) {
+      const toast = document.getElementById('live-action-feedback');
+      const text = document.getElementById('feedback-text');
+      text.textContent = msg;
+      if (isError) {
+        toast.className = "transition-all duration-200 opacity-100 bg-rose-950/90 border border-rose-500 text-rose-200 px-3 py-2 rounded-xl text-xs flex items-center justify-between shadow-lg";
+      } else {
+        toast.className = "transition-all duration-200 opacity-100 bg-slate-900 border border-orange-500/60 text-slate-100 px-3 py-2 rounded-xl text-xs flex items-center justify-between shadow-lg";
+      }
+      setTimeout(() => {
+        toast.classList.replace('opacity-100', 'opacity-0');
+      }, 2500);
+    }
+
+    function confirmFinishMatch() {
+      const match = getActiveMatch();
+      if (!match) return;
+      if (confirm(`Confermi la chiusura della partita ${match.matchNumber}? Punteggio finale: Casa ${match.homeScore} - ${match.awayScore} ${match.opponent}`)) {
+        showFeedbackToast('Gara terminata e salvata nei dati storici!');
+        switchTab('stats');
+      }
+    }
+
+    /* Helper: calcola statistiche per un singolo match */
+    function computePlayerMatchStats(playerId, match) {
+      const st = {
+        points: 0,
+        made2: 0, att2: 0,
+        made3: 0, att3: 0,
+        madeFt: 0, attFt: 0,
+        rebOff: 0, rebDef: 0,
+        steals: 0, turnovers: 0,
+        assists: 0, blocks: 0,
+        fouls: 0
+      };
+
+      if (!match || !match.events) return st;
+
+      match.events.forEach(ev => {
+        if (ev.playerId !== playerId) return;
+        switch (ev.action) {
+          case '2pt_made': st.made2++; st.att2++; st.points += 2; break;
+          case '2pt_miss': st.att2++; break;
+          case '3pt_made': st.made3++; st.att3++; st.points += 3; break;
+          case '3pt_miss': st.att3++; break;
+          case 'ft_made': st.madeFt++; st.attFt++; st.points += 1; break;
+          case 'ft_miss': st.attFt++; break;
+          case 'reb_off': st.rebOff++; break;
+          case 'reb_def': st.rebDef++; break;
+          case 'steal': st.steals++; break;
+          case 'turnover': st.turnovers++; break;
+          case 'assist': st.assists++; break;
+          case 'block': st.blocks++; break;
+          case 'foul': st.fouls++; break;
+        }
+      });
+
+      return st;
+    }
+
+    /* ==========================================================================
+       MODULO 4: VISUALIZZAZIONE STATISTICHE & PERCENTUALI
+       ========================================================================== */
+    let currentStatsTab = 'team';
+
+    function switchStatsSubTab(subTab) {
+      currentStatsTab = subTab;
+      const teamBtn = document.getElementById('stats-tab-team');
+      const playerBtn = document.getElementById('stats-tab-player');
+      const teamContent = document.getElementById('stats-content-team');
+      const playerContent = document.getElementById('stats-content-player');
+
+      if (subTab === 'team') {
+        teamBtn.className = "touch-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-orange-600 text-white";
+        playerBtn.className = "touch-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-slate-800 text-slate-400 border border-slate-700";
+        teamContent.classList.remove('hidden');
+        playerContent.classList.add('hidden');
+      } else {
+        playerBtn.className = "touch-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-orange-600 text-white";
+        teamBtn.className = "touch-btn px-3 py-1.5 rounded-lg text-xs font-extrabold bg-slate-800 text-slate-400 border border-slate-700";
+        playerContent.classList.remove('hidden');
+        teamContent.classList.add('hidden');
+      }
+      renderStatisticsView();
+    }
+
+    function getFilteredMatches() {
+      const matchFilter = document.getElementById('stats-filter-match').value;
+      const startFilter = document.getElementById('stats-filter-date-start').value;
+      const endFilter = document.getElementById('stats-filter-date-end').value;
+
+      return matches.filter(m => {
+        if (matchFilter !== 'all' && m.id !== matchFilter) return false;
+        if (startFilter) {
+          const matchDay = m.dateTime.slice(0, 10);
+          if (matchDay < startFilter) return false;
+        }
+        if (endFilter) {
+          const matchDay = m.dateTime.slice(0, 10);
+          if (matchDay > endFilter) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderStatisticsView() {
+      // Populate match selector options
+      const matchSelect = document.getElementById('stats-filter-match');
+      const curVal = matchSelect.value;
+      matchSelect.innerHTML = '<option value="all">Tutte le Partite</option>';
+      matches.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = `${m.matchNumber} vs ${m.opponent} (${new Date(m.dateTime).toLocaleDateString('it-IT')})`;
+        matchSelect.appendChild(opt);
+      });
+      matchSelect.value = curVal || 'all';
+
+      // Populate Player Selector for individual tab
+      const playerSelect = document.getElementById('stats-select-player');
+      const curP = playerSelect.value;
+      playerSelect.innerHTML = '';
+      const sorted = [...roster].sort((a, b) => a.number - b.number);
+      sorted.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `#${p.number} - ${p.surname} ${p.name}`;
+        playerSelect.appendChild(opt);
+      });
+      if (curP) playerSelect.value = curP;
+
+      const filtered = getFilteredMatches();
+
+      // Aggregate Stats across filtered matches
+      renderTeamAggregateStats(filtered);
+      renderPlayerSpecificStats();
+    }
+
+    function renderTeamAggregateStats(filteredMatches) {
+      let totPts = 0;
+      let totRebO = 0;
+      let totRebD = 0;
+      let totAst = 0;
+      let totTo = 0;
+      let totStl = 0;
+      let totBlk = 0;
+      let totFouls = 0;
+
+      let m2 = 0, a2 = 0;
+      let m3 = 0, a3 = 0;
+      let mFt = 0, aFt = 0;
+
+      // Player map for table
+      const playerMap = {};
+      roster.forEach(p => {
+        playerMap[p.id] = {
+          player: p,
+          pts: 0,
+          m2: 0, a2: 0,
+          m3: 0, a3: 0,
+          mFt: 0, aFt: 0,
+          rebOff: 0, rebDef: 0,
+          ast: 0, stl: 0, to: 0, blk: 0, fouls: 0
+        };
+      });
+
+      filteredMatches.forEach(m => {
+        m.events.forEach(ev => {
+          if (!playerMap[ev.playerId]) return;
+          const p = playerMap[ev.playerId];
+          switch (ev.action) {
+            case '2pt_made': p.m2++; p.a2++; p.pts += 2; totPts += 2; m2++; a2++; break;
+            case '2pt_miss': p.a2++; a2++; break;
+            case '3pt_made': p.m3++; p.a3++; p.pts += 3; totPts += 3; m3++; a3++; break;
+            case '3pt_miss': p.a3++; a3++; break;
+            case 'ft_made': p.mFt++; p.aFt++; p.pts += 1; totPts += 1; mFt++; aFt++; break;
+            case 'ft_miss': p.aFt++; aFt++; break;
+            case 'reb_off': p.rebOff++; totRebO++; break;
+            case 'reb_def': p.rebDef++; totRebD++; break;
+            case 'assist': p.ast++; totAst++; break;
+            case 'steal': p.stl++; totStl++; break;
+            case 'turnover': p.to++; totTo++; break;
+            case 'block': p.blk++; totBlk++; break;
+            case 'foul': p.fouls++; totFouls++; break;
+          }
+        });
+      });
+
+      // KPI display
+      document.getElementById('team-stat-pts').textContent = totPts;
+      document.getElementById('team-stat-reb').textContent = totRebO + totRebD;
+      document.getElementById('team-stat-ast').textContent = totAst;
+      document.getElementById('team-stat-to').textContent = totTo;
+
+      // Shooting percentages calculation
+      const pct2 = a2 > 0 ? ((m2 / a2) * 100).toFixed(1) : '0.0';
+      const pct3 = a3 > 0 ? ((m3 / a3) * 100).toFixed(1) : '0.0';
+      const pctFt = aFt > 0 ? ((mFt / aFt) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('team-pct-2pt').textContent = `${pct2}%`;
+      document.getElementById('team-raw-2pt').textContent = `${m2}/${a2}`;
+
+      document.getElementById('team-pct-3pt').textContent = `${pct3}%`;
+      document.getElementById('team-raw-3pt').textContent = `${m3}/${a3}`;
+
+      document.getElementById('team-pct-ft').textContent = `${pctFt}%`;
+      document.getElementById('team-raw-ft').textContent = `${mFt}/${aFt}`;
+
+      // Table Render
+      const tbody = document.getElementById('team-table-body');
+      tbody.innerHTML = '';
+
+      Object.values(playerMap).sort((a, b) => b.pts - a.pts).forEach(item => {
+        const p = item.player;
+        const pPct2 = item.a2 > 0 ? `${((item.m2 / item.a2) * 100).toFixed(0)}%` : '-';
+        const pPct3 = item.a3 > 0 ? `${((item.m3 / item.a3) * 100).toFixed(0)}%` : '-';
+        const pPctFt = item.aFt > 0 ? `${((item.mFt / item.aFt) * 100).toFixed(0)}%` : '-';
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-900/50";
+        tr.innerHTML = `
+          <td class="p-2.5 font-sans font-bold text-white flex items-center gap-1.5">
+            <span class="text-orange-400 font-mono">#${p.number}</span> ${p.surname}
+          </td>
+          <td class="p-2.5 text-center font-bold text-orange-400">${item.pts}</td>
+          <td class="p-2.5 text-center text-slate-300">${pPct2} <span class="text-[10px] text-slate-500">(${item.m2}/${item.a2})</span></td>
+          <td class="p-2.5 text-center text-slate-300">${pPct3} <span class="text-[10px] text-slate-500">(${item.m3}/${item.a3})</span></td>
+          <td class="p-2.5 text-center text-slate-300">${pPctFt} <span class="text-[10px] text-slate-500">(${item.mFt}/${item.aFt})</span></td>
+          <td class="p-2.5 text-center text-purple-400">${item.rebOff + item.rebDef}</td>
+          <td class="p-2.5 text-center text-yellow-400">${item.ast}</td>
+          <td class="p-2.5 text-center text-cyan-400">${item.stl}</td>
+          <td class="p-2.5 text-center text-rose-400">${item.to}</td>
+          <td class="p-2.5 text-center text-indigo-400">${item.blk}</td>
+          <td class="p-2.5 text-center text-rose-500 font-bold">${item.fouls}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderPlayerSpecificStats() {
+      const pSelect = document.getElementById('stats-select-player');
+      const playerId = pSelect.value;
+      if (!playerId) return;
+
+      const player = roster.find(p => p.id === playerId);
+      if (!player) return;
+
+      const filteredMatches = getFilteredMatches();
+
+      let pts = 0;
+      let m2 = 0, a2 = 0;
+      let m3 = 0, a3 = 0;
+      let mFt = 0, aFt = 0;
+      let rebO = 0, rebD = 0;
+      let ast = 0, stl = 0, to = 0, blk = 0, fouls = 0;
+
+      filteredMatches.forEach(m => {
+        m.events.forEach(ev => {
+          if (ev.playerId !== player.id) return;
+          switch (ev.action) {
+            case '2pt_made': m2++; a2++; pts += 2; break;
+            case '2pt_miss': a2++; break;
+            case '3pt_made': m3++; a3++; pts += 3; break;
+            case '3pt_miss': a3++; break;
+            case 'ft_made': mFt++; aFt++; pts += 1; break;
+            case 'ft_miss': aFt++; break;
+            case 'reb_off': rebO++; break;
+            case 'reb_def': rebD++; break;
+            case 'assist': ast++; break;
+            case 'steal': stl++; break;
+            case 'turnover': to++; break;
+            case 'block': blk++; break;
+            case 'foul': fouls++; break;
+          }
+        });
+      });
+
+      // Percentages
+      const pct2 = a2 > 0 ? ((m2 / a2) * 100).toFixed(1) : '0.0';
+      const pct3 = a3 > 0 ? ((m3 / a3) * 100).toFixed(1) : '0.0';
+      const pctFt = aFt > 0 ? ((mFt / aFt) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('pcard-number').textContent = `#${player.number}`;
+      document.getElementById('pcard-name').textContent = `${player.surname} ${player.name}`;
+      document.getElementById('pcard-info').textContent = `Anno: ${player.birthYear || 'N/D'} | Partite filtrate: ${filteredMatches.length}`;
+      document.getElementById('pcard-pts').textContent = pts;
+
+      document.getElementById('pcard-pct-2pt').textContent = `${pct2}%`;
+      document.getElementById('pcard-raw-2pt').textContent = `${m2}/${a2} R/T`;
+
+      document.getElementById('pcard-pct-3pt').textContent = `${pct3}%`;
+      document.getElementById('pcard-raw-3pt').textContent = `${m3}/${a3} R/T`;
+
+      document.getElementById('pcard-pct-ft').textContent = `${pctFt}%`;
+      document.getElementById('pcard-raw-ft').textContent = `${mFt}/${aFt} R/T`;
+
+      document.getElementById('pcard-reb').textContent = `${rebO + rebD} (${rebO} Off, ${rebD} Dif)`;
+      document.getElementById('pcard-ast').textContent = ast;
+      document.getElementById('pcard-stl').textContent = stl;
+      document.getElementById('pcard-to').textContent = to;
+      document.getElementById('pcard-blk').textContent = blk;
+      document.getElementById('pcard-foul').textContent = fouls;
+    }
+
+    /* ==========================================================================
+       ESPORTAZIONE DATI (JSON / CSV) & BACKUP OFFLINE
+       ========================================================================== */
+    function openExportModal() {
+      document.getElementById('export-modal').classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+      document.getElementById('export-modal').classList.add('hidden');
+    }
+
+    function exportDataJSON() {
+      const exportObject = {
+        app: "BasketScout Pro",
+        version: "1.0",
+        exportedAt: new Date().toISOString(),
+        roster: roster,
+        matches: matches
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObject, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `BasketScout_Backup_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      closeExportModal();
+    }
+
+    function exportStatsCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Partita,Data,NumeroMaglia,Cognome,Nome,Punti,2PT_Segnati,2PT_Tentati,2PT_Perc,3PT_Segnati,3PT_Tentati,3PT_Perc,TL_Segnati,TL_Tentati,TL_Perc,RimbalziOff,RimbalziDif,Assist,Recuperate,Perse,Stoppate,Falli\n";
+
+      matches.forEach(m => {
+        roster.forEach(p => {
+          const stats = computePlayerMatchStats(p.id, m);
+          // Only include if player had minutes or events or was on the squad
+          if (m.rosterSelectedIds.includes(p.id) || stats.points > 0 || stats.att2 > 0) {
+            const p2 = stats.att2 > 0 ? ((stats.made2 / stats.att2) * 100).toFixed(1) : 0;
+            const p3 = stats.att3 > 0 ? ((stats.made3 / stats.att3) * 100).toFixed(1) : 0;
+            const pFt = stats.attFt > 0 ? ((stats.madeFt / stats.attFt) * 100).toFixed(1) : 0;
+
+            const row = [
+              `"${m.matchNumber} vs ${m.opponent}"`,
+              `"${m.dateTime.slice(0, 10)}"`,
+              p.number,
+              `"${p.surname}"`,
+              `"${p.name}"`,
+              stats.points,
+              stats.made2, stats.att2, `${p2}%`,
+              stats.made3, stats.att3, `${p3}%`,
+              stats.madeFt, stats.attFt, `${pFt}%`,
+              stats.rebOff, stats.rebDef,
+              stats.assists, stats.steals, stats.turnovers,
+              stats.blocks, stats.fouls
+            ].join(",");
+            csvContent += row + "\n";
+          }
+        });
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `BasketScout_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      closeExportModal();
+    }
+
+    function importDataJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.roster && imported.matches) {
+            roster = imported.roster;
+            matches = imported.matches;
+            if (matches.length > 0) {
+              activeMatchId = matches[0].id;
+            }
+            saveStorage();
+            alert('Dati importati con successo nel database locale!');
+            closeExportModal();
+            renderRosterList();
+            renderSetupView();
+            renderLiveScoutView();
+          } else {
+            alert('Formato file JSON non valido.');
+          }
+        } catch (err) {
+          alert('Errore nella lettura del file JSON.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllDataPrompt() {
+      if (confirm('Sei assolutamente sicuro di voler cancellare TUTTI i dati salvati offline (Roster, Partite e Statistiche)? Questa azione non è reversibile.')) {
+        localStorage.removeItem(STORAGE_KEY_ROSTER);
+        localStorage.removeItem(STORAGE_KEY_MATCHES);
+        localStorage.removeItem(STORAGE_KEY_ACTIVE_MATCH);
+        roster = [];
+        matches = [];
+        activeMatchId = null;
+        closeExportModal();
+        seedInitialRosterIfEmpty();
+        renderRosterList();
+        renderSetupView();
+        switchTab('roster');
+      }
+    }
+  </script>
+</body>
+</html>
