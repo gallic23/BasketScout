@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
+<!DOCTYPE html><html lang="it" style=""><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>BasketScout Pro - Live Mobile Scouting</title>
@@ -79,12 +77,12 @@
 
     <!-- Quick Game Banner or Export Trigger -->
     <div class="flex items-center space-x-2">
-      <button onclick="openExportModal()" title="Esporta Dati" class="touch-btn p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 flex items-center gap-1 text-xs font-semibold">
-        <i data-lucide="download" class="w-4 h-4"></i>
+      <button onclick="openDriveModal()" id="gdrive-header-btn" title="Stato Cloud Google Drive" class="touch-btn px-2.5 py-1.5 bg-slate-800/90 hover:bg-slate-700 border border-emerald-500/30 hover:border-emerald-500/50 rounded-lg flex items-center gap-2 text-xs font-semibold shadow-sm transition-all text-slate-200"><div class="relative flex items-center justify-center"><svg class="w-4 h-4" viewBox="0 0 87.3 78" fill="none"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066DA"></path><path d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44C.4 50 0 51.55 0 53.1h27.5z" fill="#00AC47"></path><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l6.1 10.6z" fill="#EA4335"></path><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.4-4.5 1.2z" fill="#00832D"></path><path d="M59.8 53.1H87.3c0-1.55-.4-3.1-1.2-4.5l-14.9-25.8c-.8-1.4-1.95-2.5-3.3-3.3L54.15 43.1z" fill="#2684FC"></path><path d="M73.55 76.8H27.5l-13.75-23.7h59.8z" fill="#FFBA00"></path></svg><span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900"></span></div><div class="flex flex-col text-left leading-none"><div class="flex items-center gap-1.5"><span class="text-[11px] font-bold text-white">Drive Sync</span><span class="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold border border-emerald-500/30">ATTIVO</span></div><span class="text-[9px] text-slate-400 font-mono mt-0.5">Sync: 2 min fa</span></div></button><button onclick="openExportModal()" title="Esporta Dati" class="touch-btn p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 flex items-center gap-1 text-xs font-semibold">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" aria-hidden="true" class="lucide lucide-download w-4 h-4"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
         <span class="hidden sm:inline">Esporta</span>
       </button>
       <div id="quick-score-badge" class="hidden bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800 text-xs font-mono font-bold text-orange-400">
-        <span id="badge-home">0</span> - <span id="badge-away">0</span>
+        <span id="badge-home" class="">0</span> - <span id="badge-away" class="">0</span>
       </div>
     </div>
   </header>
@@ -97,19 +95,233 @@
       <div class="flex items-center justify-between bg-slate-900/80 p-3 rounded-xl border border-slate-800">
         <div>
           <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i data-lucide="users" class="w-5 h-5 text-orange-500"></i> Anagrafica Roster
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="users" aria-hidden="true" class="lucide lucide-users w-5 h-5 text-orange-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg> Anagrafica Roster
           </h2>
           <p class="text-xs text-slate-400">Gestisci i giocatori della squadra. Salva direttamente offline.</p>
         </div>
         <button onclick="openPlayerModal()" class="touch-btn bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 shadow-md shadow-orange-600/30">
-          <i data-lucide="user-plus" class="w-4 h-4"></i> Nuovo Giocatore
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="user-plus" aria-hidden="true" class="lucide lucide-user-plus w-4 h-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg> Nuovo Giocatore
         </button>
       </div>
 
       <!-- Player Cards Grid -->
-      <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5"><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #4
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Conti Matteo</div>
+              <div class="text-[11px] text-slate-400">Anno: 2004</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p1')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p1')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #7
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Moretti Davide</div>
+              <div class="text-[11px] text-slate-400">Anno: 2002</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p2')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p2')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #9
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Gentile Alessandro</div>
+              <div class="text-[11px] text-slate-400">Anno: 1999</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p3')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p3')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #11
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Fontecchio Simone</div>
+              <div class="text-[11px] text-slate-400">Anno: 2001</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p4')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p4')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #13
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">De Rossi Giacomo</div>
+              <div class="text-[11px] text-slate-400">Anno: 2003</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p5')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p5')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #15
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Datome Luigi</div>
+              <div class="text-[11px] text-slate-400">Anno: 1998</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p6')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p6')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #18
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Melli Niccolò</div>
+              <div class="text-[11px] text-slate-400">Anno: 2000</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p7')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p7')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #21
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Polonara Achille</div>
+              <div class="text-[11px] text-slate-400">Anno: 2001</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p8')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p8')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #23
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Belinelli Marco</div>
+              <div class="text-[11px] text-slate-400">Anno: 1997</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p9')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p9')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #30
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Tonut Stefano</div>
+              <div class="text-[11px] text-slate-400">Anno: 2002</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p10')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p10')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #33
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Tessitori Amedeo</div>
+              <div class="text-[11px] text-slate-400">Anno: 2000</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p11')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p11')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div><div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 border border-orange-500/40 text-orange-400 font-black text-lg flex items-center justify-center shadow">
+              #45
+            </div>
+            <div>
+              <div class="font-bold text-sm text-white">Gallinari Danilo</div>
+              <div class="text-[11px] text-slate-400">Anno: 1998</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="editPlayer('p12')" class="p-2 text-slate-400 hover:text-orange-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-2" aria-hidden="true" class="lucide lucide-edit-2 w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path></svg>
+            </button>
+            <button onclick="deletePlayer('p12')" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash" aria-hidden="true" class="lucide lucide-trash w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div></div>
       <div id="roster-empty-state" class="hidden text-center py-12 px-4 bg-slate-900/40 rounded-2xl border border-dashed border-slate-800">
         <div class="text-4xl mb-2">📋</div>
         <h3 class="text-base font-semibold text-slate-300">Nessun giocatore registrato</h3>
@@ -125,7 +337,7 @@
       <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm space-y-4">
         <div class="border-b border-slate-800 pb-3">
           <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <i data-lucide="clipboard-list" class="w-5 h-5 text-orange-500"></i> Dettagli Partita
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="clipboard-list" aria-hidden="true" class="lucide lucide-clipboard-list w-5 h-5 text-orange-500"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg> Dettagli Partita
           </h2>
           <p class="text-xs text-slate-400">Configura i dati della gara e seleziona esattamente i 12 convocati.</p>
         </div>
@@ -158,18 +370,64 @@
             </div>
           </div>
 
-          <div id="setup-players-checklist" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800">
-            <!-- Populated via JS -->
-          </div>
+          <div id="setup-players-checklist" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1 bg-slate-950 rounded-xl border border-slate-800"><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p1')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#4</span>
+          <span class="text-xs font-semibold truncate">Conti</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p2')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#7</span>
+          <span class="text-xs font-semibold truncate">Moretti</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p3')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#9</span>
+          <span class="text-xs font-semibold truncate">Gentile</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p4')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#11</span>
+          <span class="text-xs font-semibold truncate">Fontecchio</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p5')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#13</span>
+          <span class="text-xs font-semibold truncate">De Rossi</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p6')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#15</span>
+          <span class="text-xs font-semibold truncate">Datome</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p7')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#18</span>
+          <span class="text-xs font-semibold truncate">Melli</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p8')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#21</span>
+          <span class="text-xs font-semibold truncate">Polonara</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p9')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#23</span>
+          <span class="text-xs font-semibold truncate">Belinelli</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p10')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#30</span>
+          <span class="text-xs font-semibold truncate">Tonut</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p11')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#33</span>
+          <span class="text-xs font-semibold truncate">Tessitori</span>
+        </label><label class="flex items-center space-x-2 p-2 rounded-lg border cursor-pointer touch-btn bg-slate-900 border-slate-800 text-slate-300">
+          <input type="checkbox" onchange="toggleSquadPlayer('p12')" class="rounded accent-orange-500 w-4 h-4">
+          <span class="font-black text-orange-400 font-mono text-xs">#45</span>
+          <span class="text-xs font-semibold truncate">Gallinari</span>
+        </label></div>
         </div>
 
         <!-- Start live scouting action -->
         <div class="pt-3 flex flex-col sm:flex-row gap-2.5">
           <button id="btn-start-scout" onclick="startScoutingSession()" class="touch-btn flex-1 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
-            <i data-lucide="play-circle" class="w-5 h-5"></i> Inizia Scouting Live
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="play-circle" aria-hidden="true" class="lucide lucide-play-circle w-5 h-5"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"></path><circle cx="12" cy="12" r="10"></circle></svg> Inizia Scouting Live
           </button>
           <button id="btn-resume-scout" onclick="resumeActiveMatch()" class="touch-btn hidden flex-1 bg-slate-800 hover:bg-slate-700 text-orange-400 border border-orange-500/40 font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm">
-            <i data-lucide="fast-forward" class="w-5 h-5"></i> Riprendi Partita in Corso
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="fast-forward" aria-hidden="true" class="lucide lucide-fast-forward w-5 h-5"><path d="M12 6a2 2 0 0 1 3.414-1.414l6 6a2 2 0 0 1 0 2.828l-6 6A2 2 0 0 1 12 18z"></path><path d="M2 6a2 2 0 0 1 3.414-1.414l6 6a2 2 0 0 1 0 2.828l-6 6A2 2 0 0 1 2 18z"></path></svg> Riprendi Partita in Corso
           </button>
         </div>
       </div>
@@ -177,9 +435,7 @@
       <!-- Past Matches Quick List -->
       <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
         <h3 class="text-xs font-bold uppercase text-slate-400 mb-2">Storico Partite Salvate</h3>
-        <div id="saved-matches-list" class="space-y-1.5 text-xs">
-          <!-- Rendered dynamically -->
-        </div>
+        <div id="saved-matches-list" class="space-y-1.5 text-xs"><p class="text-slate-500 italic">Nessuna partita archiviata finora.</p></div>
       </div>
     </section>
 
@@ -190,7 +446,7 @@
       <div class="bg-slate-900 rounded-2xl border border-slate-800 p-3 shadow-lg relative overflow-hidden">
         <!-- Halftime notification banner -->
         <div id="halftime-banner" class="hidden halftime-alert mb-2.5 py-1.5 px-3 bg-amber-500/20 border border-amber-500/50 rounded-xl text-center text-amber-300 font-extrabold text-xs flex items-center justify-center gap-2">
-          <span>⏸️</span> INTERVALLO LUNGO (Fine 2° Quarto) - RIPOSO SQUADRE
+          <span class="">⏸️</span> INTERVALLO LUNGO (Fine 2° Quarto) - RIPOSO SQUADRE
         </div>
 
         <div class="grid grid-cols-12 gap-2 items-center">
@@ -254,7 +510,7 @@
           <span id="feedback-text" class="font-medium">Azione registrata</span>
         </div>
         <button onclick="undoLastAction()" class="touch-btn bg-slate-800 text-orange-400 hover:bg-slate-700 px-2 py-1 rounded text-xs font-bold border border-slate-700 flex items-center gap-1">
-          <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Annulla (Undo)
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="rotate-ccw" aria-hidden="true" class="lucide lucide-rotate-ccw w-3 h-3"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg> Annulla (Undo)
         </button>
       </div>
 
@@ -262,7 +518,7 @@
       <div>
         <div class="flex items-center justify-between mb-1.5 px-1">
           <span class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
-            <i data-lucide="shield" class="w-3.5 h-3.5 text-orange-500"></i> Seleziona Giocatore Convocato:
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shield" aria-hidden="true" class="lucide lucide-shield w-3.5 h-3.5 text-orange-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg> Seleziona Giocatore Convocato:
           </span>
           <span class="text-[11px] text-slate-400">Tocca un atleta per inserire la giocata</span>
         </div>
@@ -287,7 +543,7 @@
           </div>
           <div class="flex items-center gap-1">
             <button onclick="deselectPlayer()" class="touch-btn p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 text-xs">
-              <i data-lucide="x" class="w-4 h-4"></i>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-4 h-4"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
             </button>
           </div>
         </div>
@@ -298,16 +554,16 @@
           <!-- TIRO DA 2 PUNTI -->
           <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
             <div class="text-[11px] font-black uppercase text-amber-400 mb-1 flex items-center justify-between">
-              <span>Tiro da 2 PT</span>
+              <span class="">Tiro da 2 PT</span>
               <span id="pad-stat-2pt" class="text-[10px] text-slate-400 font-mono">0/0</span>
             </div>
             <div class="grid grid-cols-2 gap-1.5">
               <button onclick="recordLiveAction('2pt_made')" class="touch-btn bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-black flex flex-col items-center shadow-sm">
-                <span>+2 SEGNATO</span>
+                <span class="">+2 SEGNATO</span>
                 <span class="text-[9px] opacity-80">(Aggiorna tabellone)</span>
               </button>
               <button onclick="recordLiveAction('2pt_miss')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-rose-400 border border-slate-700 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                <span>SBAGLIATO</span>
+                <span class="">SBAGLIATO</span>
                 <span class="text-[9px] text-slate-500">(0 Punti)</span>
               </button>
             </div>
@@ -316,16 +572,16 @@
           <!-- TIRO DA 3 PUNTI -->
           <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
             <div class="text-[11px] font-black uppercase text-orange-400 mb-1 flex items-center justify-between">
-              <span>Tiro da 3 PT</span>
+              <span class="">Tiro da 3 PT</span>
               <span id="pad-stat-3pt" class="text-[10px] text-slate-400 font-mono">0/0</span>
             </div>
             <div class="grid grid-cols-2 gap-1.5">
               <button onclick="recordLiveAction('3pt_made')" class="touch-btn bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-black flex flex-col items-center shadow-sm">
-                <span>+3 SEGNATO</span>
+                <span class="">+3 SEGNATO</span>
                 <span class="text-[9px] opacity-80">(Aggiorna tabellone)</span>
               </button>
               <button onclick="recordLiveAction('3pt_miss')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-rose-400 border border-slate-700 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                <span>SBAGLIATO</span>
+                <span class="">SBAGLIATO</span>
                 <span class="text-[9px] text-slate-500">(0 Punti)</span>
               </button>
             </div>
@@ -334,16 +590,16 @@
           <!-- TIRO LIBERO (1 PUNTO) -->
           <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
             <div class="text-[11px] font-black uppercase text-blue-400 mb-1 flex items-center justify-between">
-              <span>Tiro Libero (TL)</span>
+              <span class="">Tiro Libero (TL)</span>
               <span id="pad-stat-ft" class="text-[10px] text-slate-400 font-mono">0/0</span>
             </div>
             <div class="grid grid-cols-2 gap-1.5">
               <button onclick="recordLiveAction('ft_made')" class="touch-btn bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-black flex flex-col items-center shadow-sm">
-                <span>+1 SEGNATO</span>
+                <span class="">+1 SEGNATO</span>
                 <span class="text-[9px] opacity-80">(Aggiorna tabellone)</span>
               </button>
               <button onclick="recordLiveAction('ft_miss')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-rose-400 border border-slate-700 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                <span>SBAGLIATO</span>
+                <span class="">SBAGLIATO</span>
                 <span class="text-[9px] text-slate-500">(0 Punti)</span>
               </button>
             </div>
@@ -352,16 +608,16 @@
           <!-- RIMBALZI (Offensivo / Difensivo) -->
           <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
             <div class="text-[11px] font-black uppercase text-purple-400 mb-1 flex items-center justify-between">
-              <span>Rimbalzi</span>
+              <span class="">Rimbalzi</span>
               <span id="pad-stat-reb" class="text-[10px] text-slate-400 font-mono">0 O / 0 D</span>
             </div>
             <div class="grid grid-cols-2 gap-1.5">
               <button onclick="recordLiveAction('reb_off')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-purple-900/40 text-purple-300 border border-purple-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                <span>OFFENSIVO</span>
+                <span class="">OFFENSIVO</span>
                 <span class="text-[9px] text-slate-400">+1 Rimb. Off</span>
               </button>
               <button onclick="recordLiveAction('reb_def')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-purple-900/40 text-purple-300 border border-purple-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                <span>DIFENSIVO</span>
+                <span class="">DIFENSIVO</span>
                 <span class="text-[9px] text-slate-400">+1 Rimb. Dif</span>
               </button>
             </div>
@@ -370,16 +626,16 @@
           <!-- POSSESSI (Palla Recuperata / Palla Persa) -->
           <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
             <div class="text-[11px] font-black uppercase text-cyan-400 mb-1 flex items-center justify-between">
-              <span>Possessi</span>
+              <span class="">Possessi</span>
               <span id="pad-stat-pos" class="text-[10px] text-slate-400 font-mono">0 Rec / 0 Pers</span>
             </div>
             <div class="grid grid-cols-2 gap-1.5">
               <button onclick="recordLiveAction('steal')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-cyan-900/40 text-cyan-300 border border-cyan-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                <span>RECUPERATA</span>
+                <span class="">RECUPERATA</span>
                 <span class="text-[9px] text-slate-400">+1 Recupero</span>
               </button>
               <button onclick="recordLiveAction('turnover')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-rose-900/40 text-rose-400 border border-rose-500/30 py-2.5 rounded-lg text-xs font-bold flex flex-col items-center">
-                <span>PERSA</span>
+                <span class="">PERSA</span>
                 <span class="text-[9px] text-slate-400">+1 Palla Persa</span>
               </button>
             </div>
@@ -388,20 +644,20 @@
           <!-- ALTRE VOCI (Stoppata / Assist / Fallo) -->
           <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between">
             <div class="text-[11px] font-black uppercase text-yellow-400 mb-1 flex items-center justify-between">
-              <span>Assist / Fallo / Stop</span>
+              <span class="">Assist / Fallo / Stop</span>
               <span id="pad-stat-fouls" class="text-[10px] text-rose-400 font-mono font-bold">0 Falli</span>
             </div>
             <div class="grid grid-cols-3 gap-1">
               <button onclick="recordLiveAction('assist')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-yellow-900/40 text-yellow-300 border border-yellow-500/30 py-2.5 rounded-lg text-[11px] font-bold flex flex-col items-center">
-                <span>ASSIST</span>
+                <span class="">ASSIST</span>
                 <span class="text-[8px] text-slate-400">+1 Ast</span>
               </button>
               <button onclick="recordLiveAction('block')" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-indigo-900/40 text-indigo-300 border border-indigo-500/30 py-2.5 rounded-lg text-[11px] font-bold flex flex-col items-center">
-                <span>STOP</span>
+                <span class="">STOP</span>
                 <span class="text-[8px] text-slate-400">+1 Stoppata</span>
               </button>
               <button onclick="recordLiveAction('foul')" class="touch-btn bg-rose-900/40 hover:bg-rose-900/60 active:bg-rose-800 text-rose-300 border border-rose-600/50 py-2.5 rounded-lg text-[11px] font-black flex flex-col items-center">
-                <span>FALLO</span>
+                <span class="">FALLO</span>
                 <span class="text-[8px] text-rose-400">+1 Fallo</span>
               </button>
             </div>
@@ -412,7 +668,7 @@
         <!-- Sezione Correzioni / Decremento Rapido (-1) in caso di errore dell'operatore -->
         <div class="border-t border-slate-800/80 pt-2 flex items-center justify-between">
           <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Errore di battuta? Correggi singola voce:
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="help-circle" aria-hidden="true" class="lucide lucide-help-circle w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg> Errore di battuta? Correggi singola voce:
           </span>
           <div class="flex flex-wrap gap-1">
             <button onclick="correctStat('2pt_made')" class="touch-btn px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded border border-slate-700 font-medium">-1 2PT Segn</button>
@@ -441,7 +697,7 @@
 
           <!-- Quick Refresh / Export inside stats -->
           <button onclick="renderStatisticsView()" class="touch-btn p-1.5 bg-slate-800 text-slate-400 rounded-lg hover:text-white">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="refresh-cw" aria-hidden="true" class="lucide lucide-refresh-cw w-4 h-4"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
           </button>
         </div>
 
@@ -616,19 +872,19 @@
   <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-30 px-2 py-1.5 shadow-2xl">
     <div class="max-w-md mx-auto grid grid-cols-4 gap-1">
       <button onclick="switchTab('roster')" id="nav-btn-roster" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-white transition-colors">
-        <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="users" aria-hidden="true" class="lucide lucide-users w-5 h-5 mb-0.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
         <span class="text-[10px] font-bold">Roster</span>
       </button>
       <button onclick="switchTab('match-setup')" id="nav-btn-setup" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-white transition-colors">
-        <i data-lucide="settings" class="w-5 h-5 mb-0.5"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="settings" aria-hidden="true" class="lucide lucide-settings w-5 h-5 mb-0.5"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>
         <span class="text-[10px] font-bold">Partita</span>
       </button>
       <button onclick="switchTab('live-scout')" id="nav-btn-live" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl bg-orange-600 text-white shadow-md shadow-orange-600/30 transition-colors">
-        <i data-lucide="activity" class="w-5 h-5 mb-0.5"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="activity" aria-hidden="true" class="lucide lucide-activity w-5 h-5 mb-0.5"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
         <span class="text-[10px] font-extrabold tracking-tight">LIVE SCOUT</span>
       </button>
       <button onclick="switchTab('stats')" id="nav-btn-stats" class="touch-btn flex flex-col items-center justify-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-white transition-colors">
-        <i data-lucide="bar-chart-2" class="w-5 h-5 mb-0.5"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bar-chart-2" aria-hidden="true" class="lucide lucide-bar-chart-2 w-5 h-5 mb-0.5"><path d="M5 21v-6"></path><path d="M12 21V3"></path><path d="M19 21V9"></path></svg>
         <span class="text-[10px] font-bold">Statistiche</span>
       </button>
     </div>
@@ -640,22 +896,22 @@
       <div class="flex items-center justify-between border-b border-slate-800 pb-2">
         <h3 id="player-modal-title" class="font-bold text-white text-base">Aggiungi Giocatore</h3>
         <button onclick="closePlayerModal()" class="text-slate-400 hover:text-white p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
         </button>
       </div>
       <form id="player-form" onsubmit="savePlayerForm(event)" class="space-y-3 text-xs">
         <input type="hidden" id="pf-id">
         <div>
           <label class="block text-slate-400 font-semibold mb-1">Numero Maglia (Univoco) *</label>
-          <input type="number" id="pf-number" min="0" max="99" required placeholder="Es. 23" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-base font-bold text-orange-400 focus:border-orange-500 focus:outline-none">
+          <input type="number" id="pf-number" min="0" max="99" required="" placeholder="Es. 23" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-base font-bold text-orange-400 focus:border-orange-500 focus:outline-none">
         </div>
         <div>
           <label class="block text-slate-400 font-semibold mb-1">Nome *</label>
-          <input type="text" id="pf-name" required placeholder="Es. Marco" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 focus:outline-none">
+          <input type="text" id="pf-name" required="" placeholder="Es. Marco" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 focus:outline-none">
         </div>
         <div>
           <label class="block text-slate-400 font-semibold mb-1">Cognome *</label>
-          <input type="text" id="pf-surname" required placeholder="Es. Rossi" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 focus:outline-none">
+          <input type="text" id="pf-surname" required="" placeholder="Es. Rossi" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:border-orange-500 focus:outline-none">
         </div>
         <div>
           <label class="block text-slate-400 font-semibold mb-1">Anno di Nascita</label>
@@ -674,10 +930,10 @@
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-4 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2">
         <h3 class="font-bold text-white text-base flex items-center gap-2">
-          <i data-lucide="database" class="w-5 h-5 text-orange-500"></i> Esportazione Dati Offline
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="database" aria-hidden="true" class="lucide lucide-database w-5 h-5 text-orange-500"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg> Esportazione Dati Offline
         </h3>
         <button onclick="closeExportModal()" class="text-slate-400 hover:text-white p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
         </button>
       </div>
 
@@ -685,15 +941,15 @@
         Tutti i dati sono archiviati in locale nel tuo browser (LocalStorage). Da qui puoi scaricare l'intero database per backup, invio al coach o analisi statistica su foglio di calcolo.
       </p>
 
-      <div class="grid grid-cols-2 gap-3 pt-1">
+      <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between"><div class="flex items-center space-x-2.5"><div class="w-7 h-7 rounded-lg bg-slate-900 border border-emerald-500/40 flex items-center justify-center"><svg class="w-4 h-4" viewBox="0 0 87.3 78" fill="none"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066DA"></path><path d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44C.4 50 0 51.55 0 53.1h27.5z" fill="#00AC47"></path><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l6.1 10.6z" fill="#EA4335"></path><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.4-4.5 1.2z" fill="#00832D"></path><path d="M59.8 53.1H87.3c0-1.55-.4-3.1-1.2-4.5l-14.9-25.8c-.8-1.4-1.95-2.5-3.3-3.3L54.15 43.1z" fill="#2684FC"></path><path d="M73.55 76.8H27.5l-13.75-23.7h59.8z" fill="#FFBA00"></path></svg></div><div><div class="text-xs font-bold text-white flex items-center gap-1.5">Google Drive Cloud Sync <span class="text-[9px] bg-emerald-500/20 text-emerald-400 font-mono px-1 rounded border border-emerald-500/30">ATTIVO</span></div><div class="text-[10px] text-slate-400">coach.basket@gmail.com • Aggiornato 2m fa</div></div></div><button onclick="closeExportModal(); openDriveModal();" class="touch-btn px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-orange-400 border border-slate-700 text-xs font-bold rounded-lg">Gestisci</button></div><div class="grid grid-cols-2 gap-3 pt-1">
         <button onclick="exportDataJSON()" class="touch-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl flex flex-col items-center text-center space-y-1">
-          <i data-lucide="file-json" class="w-6 h-6 text-orange-400"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-json" aria-hidden="true" class="lucide lucide-file-json w-6 h-6 text-orange-400"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"></path><path d="M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1"></path></svg>
           <span class="text-xs font-bold text-white">Esporta JSON</span>
           <span class="text-[10px] text-slate-400">Database Completo</span>
         </button>
 
         <button onclick="exportStatsCSV()" class="touch-btn p-3 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl flex flex-col items-center text-center space-y-1">
-          <i data-lucide="file-spreadsheet" class="w-6 h-6 text-emerald-400"></i>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-spreadsheet" aria-hidden="true" class="lucide lucide-file-spreadsheet w-6 h-6 text-emerald-400"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg>
           <span class="text-xs font-bold text-white">Esporta CSV</span>
           <span class="text-[10px] text-slate-400">Compatibile Excel/Sheets</span>
         </button>
@@ -711,7 +967,7 @@
         </button>
       </div>
     </div>
-  </div>
+  </div><div id="drive-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"><div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl relative"><div class="flex items-center justify-between border-b border-slate-800 pb-3"><div class="flex items-center space-x-2.5"><div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center p-1.5 shadow-inner"><svg class="w-6 h-6" viewBox="0 0 87.3 78" fill="none"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066DA"></path><path d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44C.4 50 0 51.55 0 53.1h27.5z" fill="#00AC47"></path><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l6.1 10.6z" fill="#EA4335"></path><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.4-4.5 1.2z" fill="#00832D"></path><path d="M59.8 53.1H87.3c0-1.55-.4-3.1-1.2-4.5l-14.9-25.8c-.8-1.4-1.95-2.5-3.3-3.3L54.15 43.1z" fill="#2684FC"></path><path d="M73.55 76.8H27.5l-13.75-23.7h59.8z" fill="#FFBA00"></path></svg></div><div><h3 class="font-black text-white text-base tracking-tight flex items-center gap-1.5">Google Drive Cloud Sync</h3><p class="text-[11px] text-slate-400">Salvataggio continuo &amp; backup su cloud</p></div></div><button onclick="closeDriveModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2.5"><div class="flex items-center justify-between"><span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Account Collegato</span><span class="flex items-center gap-1.5 text-xs font-bold text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>Connesso</span></div><div class="flex items-center space-x-2.5 text-xs text-white font-medium bg-slate-900/90 p-2 rounded-lg border border-slate-800"><div class="w-7 h-7 rounded-full bg-orange-600 font-bold flex items-center justify-center text-xs text-white">C</div><div class="truncate flex-1"><div class="font-bold truncate text-slate-100">coach.basket@gmail.com</div><div class="text-[10px] text-slate-400 font-mono">Google Drive Storage</div></div><button onclick="disconnectDrive()" class="text-[11px] text-rose-400 hover:text-rose-300 font-semibold underline px-1.5">Disconnetti</button></div></div><div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-2"><div class="flex items-center justify-between text-slate-400"><span class="font-semibold">Destinazione File:</span><span class="text-slate-500 text-[10px]">JSON standard</span></div><div class="font-mono text-[11px] text-amber-300 bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-800 truncate flex items-center gap-1.5"><i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400"></i>My Drive / BasketScout / basketscout_backup.json</div><div class="flex items-center justify-between pt-1 text-[11px]"><span class="text-slate-400">Ultimo sincronismo cloud:</span><span id="drive-last-sync-label" class="font-mono text-emerald-400 font-bold">Oggi, 19:42 (2 min fa)</span></div></div><div class="p-3 bg-emerald-950/30 border border-emerald-500/30 rounded-xl text-xs flex items-start gap-2.5"><i data-lucide="wifi" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i><div class="text-slate-300 text-[11px] leading-relaxed"><span class="font-bold text-emerald-300 block mb-0.5">Modalità Offline &amp; Cloud Hybrid</span>I dati live vengono salvati prioritariamente in memoria locale offline (zero latenza) e allineati su Google Drive al ripristino connessione.</div></div><div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between"><div class="pr-3"><div class="text-xs font-bold text-white">Auto-sync Partita</div><div class="text-[10px] text-slate-400">Sincronizza automaticamente a fine quarto e a fine match</div></div><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="toggle-drive-autosync" checked="" class="sr-only peer"><div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div></label></div><div class="grid grid-cols-2 gap-2 pt-1"><button onclick="syncNowToDrive()" class="touch-btn bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-orange-600/30"><i data-lucide="cloud-upload" class="w-4 h-4"></i> Sincronizza Ora</button><button onclick="pullFromDrive()" class="touch-btn bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-200 border border-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5"><i data-lucide="cloud-download" class="w-4 h-4"></i> Ripristina da Drive</button></div></div></div>
 
   <!-- JAVASCRIPT APPLICATION CORE -->
   <script>
@@ -1872,5 +2128,8 @@
       }
     }
   </script>
-</body>
-</html>
+
+
+
+
+</body></html>
