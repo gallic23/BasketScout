@@ -50,6 +50,7 @@
       const matchSelect = document.getElementById('statsFilterMatch');
       const dateStartInput = document.getElementById('statsFilterDateStart');
       const dateEndInput = document.getElementById('statsFilterDateEnd');
+      const appearancesFilter = document.getElementById('statsOnlyWithAppearances');
 
       const matchMode = matchSelect ? matchSelect.value : 'active';
       const startDate = dateStartInput ? dateStartInput.value : '';
@@ -83,10 +84,10 @@
         statusLabel.innerText = `Partite incluse nel calcolo: ${targetMatches.length}`;
       }
 
-      renderAggregatedStats(targetMatches);
+      renderAggregatedStats(targetMatches, !!(appearancesFilter && appearancesFilter.checked));
     }
 
-    function renderAggregatedStats(matchesList) {
+    function renderAggregatedStats(matchesList, onlyWithAppearances = false) {
       const tbody = document.getElementById('statsTableBody');
       const tfoot = document.getElementById('statsTableFoot');
       if (!tbody || !tfoot) return;
@@ -127,7 +128,7 @@
             agg.tov += matchPlayer.tov || 0;
             agg.blk += matchPlayer.blk || 0;
             agg.fouls += matchPlayer.fouls || 0;
-            if (hasRecordedStats(matchPlayer)) {
+            if (matchPlayer.active !== false) {
               agg.gamesCount++;
             }
           }
@@ -136,12 +137,21 @@
         return agg;
       });
 
+      const playersToRender = onlyWithAppearances
+        ? aggregatedPlayers.filter(player => player.gamesCount > 0)
+        : aggregatedPlayers;
+      if (playersToRender.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="14" class="p-8 text-center text-slate-400">Nessun giocatore con presenze nelle partite selezionate.</td></tr>`;
+        tfoot.innerHTML = '';
+        return;
+      }
+
       let totals = {
         pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0,
         rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0, val: 0, gamesCount: 0
       };
 
-      aggregatedPlayers.forEach(p => {
+      playersToRender.forEach(p => {
         const val = calculateEfficiency(p);
         totals.gamesCount += p.gamesCount;
         totals.pts += p.pts;
@@ -203,11 +213,6 @@
       `;
     }
 
-    function hasRecordedStats(player) {
-      return ['pts', 'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'rebO', 'rebD', 'ast', 'stl', 'tov', 'blk', 'fouls']
-        .some(stat => player[stat] > 0);
-    }
-
     function calculateEfficiency(p) {
       const missedFg = (p.fg2a - p.fg2m) + (p.fg3a - p.fg3m);
       const missedFt = (p.fta - p.ftm);
@@ -223,7 +228,7 @@
       const playersToExport = match ? match.players : appState.masterRoster.map(p => createEmptyPlayerStats(p));
       playersToExport.forEach(p => {
         const val = calculateEfficiency(p);
-        const appearances = hasRecordedStats(p) ? 1 : 0;
+        const appearances = p.active !== false ? 1 : 0;
         csv += `${p.number};"${p.name}";"${p.role}";${appearances};${p.pts};${p.fg2m};${p.fg2a};${p.fg3m};${p.fg3a};${p.ftm};${p.fta};${p.rebO};${p.rebD};${p.ast};${p.stl};${p.tov};${p.blk};${p.fouls};${val}\n`;
       });
 
