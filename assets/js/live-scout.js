@@ -98,6 +98,7 @@
       const p = match.players.find(x => x.id === appState.selectedPlayerId);
       if (!p) return;
 
+      getPeriodScores(match);
       const actionSnapshot = {
         playerId: p.id,
         playerName: p.name,
@@ -113,6 +114,7 @@
         case '2pt_made':
           p.pts += 2; p.fg2m += 1; p.fg2a += 1;
           match.homeScore += 2;
+          updatePeriodScore(match, 'home', 2);
           actionDesc = `+2 Segnato da #${p.number} ${p.name}`;
           break;
         case '2pt_miss':
@@ -122,6 +124,7 @@
         case '3pt_made':
           p.pts += 3; p.fg3m += 1; p.fg3a += 1;
           match.homeScore += 3;
+          updatePeriodScore(match, 'home', 3);
           actionDesc = `+3 BOMBA di #${p.number} ${p.name}!`;
           break;
         case '3pt_miss':
@@ -131,6 +134,7 @@
         case 'ft_made':
           p.pts += 1; p.ftm += 1; p.fta += 1;
           match.homeScore += 1;
+          updatePeriodScore(match, 'home', 1);
           actionDesc = `+1 Libero a bersaglio #${p.number} ${p.name}`;
           break;
         case 'ft_miss':
@@ -184,6 +188,7 @@
         return;
       }
 
+      getPeriodScores(match);
       const last = match.actionsHistory.pop();
       const p = match.players.find(x => x.id === last.playerId);
       if (!p) return;
@@ -192,16 +197,19 @@
         case '2pt_made':
           p.pts -= 2; p.fg2m -= 1; p.fg2a -= 1;
           match.homeScore = Math.max(0, match.homeScore - 2);
+          updatePeriodScore(match, 'home', -2, last.quarter);
           break;
         case '2pt_miss': p.fg2a -= 1; break;
         case '3pt_made':
           p.pts -= 3; p.fg3m -= 1; p.fg3a -= 1;
           match.homeScore = Math.max(0, match.homeScore - 3);
+          updatePeriodScore(match, 'home', -3, last.quarter);
           break;
         case '3pt_miss': p.fg3a -= 1; break;
         case 'ft_made':
           p.pts -= 1; p.ftm -= 1; p.fta -= 1;
           match.homeScore = Math.max(0, match.homeScore - 1);
+          updatePeriodScore(match, 'home', -1, last.quarter);
           break;
         case 'ft_miss': p.fta -= 1; break;
         case 'reb_off': p.rebO = Math.max(0, p.rebO - 1); break;
@@ -229,7 +237,9 @@
     function adjustHomeScore(delta) {
       const match = getActiveMatch();
       if (!match) return;
+      getPeriodScores(match);
       match.homeScore = Math.max(0, match.homeScore + delta);
+      adjustPeriodScore(match, 'home', delta);
       updateScoreboardUI();
       saveLocalState();
     }
@@ -237,9 +247,69 @@
     function adjustAwayScore(delta) {
       const match = getActiveMatch();
       if (!match) return;
+      getPeriodScores(match);
       match.awayScore = Math.max(0, match.awayScore + delta);
+      adjustPeriodScore(match, 'away', delta);
       updateScoreboardUI();
       saveLocalState();
+    }
+
+    function getPeriodScores(match) {
+      const quarters = ['1Q', '2Q', '3Q', '4Q', 'OT'];
+      const scores = match.periodScores;
+      const isComplete = scores && quarters.every(q =>
+        scores[q] && Number.isFinite(scores[q].home) && Number.isFinite(scores[q].away)
+      );
+      if (isComplete) return scores;
+
+      const migratedScores = Object.fromEntries(
+        quarters.map(q => [q, { home: 0, away: 0 }])
+      );
+      const pointsByAction = {
+        '2pt_made': 2,
+        '3pt_made': 3,
+        'ft_made': 1
+      };
+      (match.actionsHistory || []).forEach(action => {
+        const points = pointsByAction[action.type];
+        if (points && migratedScores[action.quarter]) {
+          migratedScores[action.quarter].home += points;
+        }
+      });
+
+      const currentQuarter = migratedScores[match.quarter] ? match.quarter : '1Q';
+      ['home', 'away'].forEach(team => {
+        const recordedTotal = quarters.reduce((sum, q) => sum + migratedScores[q][team], 0);
+        migratedScores[currentQuarter][team] += match[`${team}Score`] - recordedTotal;
+      });
+      match.periodScores = migratedScores;
+      return migratedScores;
+    }
+
+    function updatePeriodScore(match, team, delta, quarter = match.quarter) {
+      const scores = getPeriodScores(match);
+      if (scores[quarter]) scores[quarter][team] = Math.max(0, scores[quarter][team] + delta);
+    }
+
+    function adjustPeriodScore(match, team, delta) {
+      const scores = getPeriodScores(match);
+      if (delta > 0) {
+        updatePeriodScore(match, team, delta);
+        return;
+      }
+
+      let pointsToRemove = Math.min(-delta, match[`${team}Score`] - delta);
+      const quarters = ['1Q', '2Q', '3Q', '4Q', 'OT'];
+      const currentIndex = quarters.indexOf(match.quarter);
+      const removalOrder = [
+        ...quarters.slice(0, currentIndex + 1).reverse(),
+        ...quarters.slice(currentIndex + 1).reverse()
+      ];
+      removalOrder.forEach(quarter => {
+        const removed = Math.min(pointsToRemove, scores[quarter][team]);
+        scores[quarter][team] -= removed;
+        pointsToRemove -= removed;
+      });
     }
 
     function setQuarter(q) {
@@ -266,6 +336,11 @@
       const sa = document.getElementById('scoreAway');
       if (sh) sh.innerText = match.homeScore;
       if (sa) sa.innerText = match.awayScore;
+      const periodScores = getPeriodScores(match);
+      Object.entries(periodScores).forEach(([quarter, score]) => {
+        const element = document.getElementById(`periodScore-${quarter}`);
+        if (element) element.innerText = `${score.home} - ${score.away}`;
+      });
       const homeName = match.homeTeam || "CASA";
       const awayName = match.awayTeam || "OSPITI";
       const lh = document.getElementById('labelTeamHome');

@@ -49,6 +49,13 @@
           quarter: "1Q",
           homeScore: 0,
           awayScore: 0,
+          periodScores: {
+            "1Q": { home: 0, away: 0 },
+            "2Q": { home: 0, away: 0 },
+            "3Q": { home: 0, away: 0 },
+            "4Q": { home: 0, away: 0 },
+            OT: { home: 0, away: 0 }
+          },
           isClosed: false,
           actionsHistory: [],
           players: DEFAULT_PLAYERS_TEMPLATE.map(p => createEmptyPlayerStats(p))

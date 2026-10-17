@@ -84,6 +84,13 @@
       if (!confirm(`Sei sicuro di voler azzerare il tabellone e le statistiche per "${match.homeTeam} vs ${match.awayTeam}"?`)) return;
       match.homeScore = 0;
       match.awayScore = 0;
+      match.periodScores = {
+        "1Q": { home: 0, away: 0 },
+        "2Q": { home: 0, away: 0 },
+        "3Q": { home: 0, away: 0 },
+        "4Q": { home: 0, away: 0 },
+        OT: { home: 0, away: 0 }
+      };
       match.quarter = '1Q';
       match.isClosed = false;
       match.actionsHistory = [];
