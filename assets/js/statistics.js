@@ -93,7 +93,7 @@
       tbody.innerHTML = '';
 
       if (matchesList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-400">Nessuna partita corrisponde ai filtri di ricerca selezionati.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="14" class="p-8 text-center text-slate-400">Nessuna partita corrisponde ai filtri di ricerca selezionati.</td></tr>`;
         tfoot.innerHTML = '';
         return;
       }
@@ -127,7 +127,7 @@
             agg.tov += matchPlayer.tov || 0;
             agg.blk += matchPlayer.blk || 0;
             agg.fouls += matchPlayer.fouls || 0;
-            if (matchPlayer.pts > 0 || matchPlayer.fg2a > 0 || matchPlayer.fg3a > 0 || matchPlayer.fouls > 0 || matchPlayer.rebO > 0 || matchPlayer.rebD > 0 || matchPlayer.ast > 0) {
+            if (hasRecordedStats(matchPlayer)) {
               agg.gamesCount++;
             }
           }
@@ -138,11 +138,12 @@
 
       let totals = {
         pts: 0, fg2m: 0, fg2a: 0, fg3m: 0, fg3a: 0, ftm: 0, fta: 0,
-        rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0, val: 0
+        rebO: 0, rebD: 0, ast: 0, stl: 0, tov: 0, blk: 0, fouls: 0, val: 0, gamesCount: 0
       };
 
       aggregatedPlayers.forEach(p => {
         const val = calculateEfficiency(p);
+        totals.gamesCount += p.gamesCount;
         totals.pts += p.pts;
         totals.fg2m += p.fg2m; totals.fg2a += p.fg2a;
         totals.fg3m += p.fg3m; totals.fg3a += p.fg3a;
@@ -162,6 +163,7 @@
         tr.innerHTML = `
           <td class="p-3 text-left font-black text-orange-400">#${p.number}</td>
           <td class="p-3 text-left font-bold text-white">${p.name}</td>
+          <td class="p-3 text-center text-slate-300">${p.gamesCount}</td>
           <td class="p-3 text-center font-black text-white bg-slate-900/40">${p.pts}</td>
           <td class="p-3 text-center text-slate-300">${p.fg2m}/${p.fg2a} <span class="text-[10px] text-slate-500">(${perc2})</span></td>
           <td class="p-3 text-center text-slate-300">${p.fg3m}/${p.fg3a} <span class="text-[10px] text-slate-500">(${perc3})</span></td>
@@ -185,6 +187,7 @@
         <tr>
           <td class="p-3 text-left">TOT</td>
           <td class="p-3 text-left uppercase">Totale Squadra (${matchesList.length} Gare)</td>
+          <td class="p-3 text-center">${totals.gamesCount}</td>
           <td class="p-3 text-center text-orange-400 text-sm font-black">${totals.pts}</td>
           <td class="p-3 text-center">${totals.fg2m}/${totals.fg2a} (${totPerc2})</td>
           <td class="p-3 text-center">${totals.fg3m}/${totals.fg3a} (${totPerc3})</td>
@@ -200,6 +203,11 @@
       `;
     }
 
+    function hasRecordedStats(player) {
+      return ['pts', 'fg2m', 'fg2a', 'fg3m', 'fg3a', 'ftm', 'fta', 'rebO', 'rebD', 'ast', 'stl', 'tov', 'blk', 'fouls']
+        .some(stat => player[stat] > 0);
+    }
+
     function calculateEfficiency(p) {
       const missedFg = (p.fg2a - p.fg2m) + (p.fg3a - p.fg3m);
       const missedFt = (p.fta - p.ftm);
@@ -210,12 +218,13 @@
 
     function exportStatsCsv() {
       const match = getActiveMatch();
-      let csv = "Numero;Nome;Ruolo;Punti;2PT_Segnati;2PT_Tentati;3PT_Segnati;3PT_Tentati;TL_Segnati;TL_Tentati;Rimb_Off;Rimb_Dif;Assist;Recuperate;Perse;Stoppate;Falli;Valutazione\n";
+      let csv = "Numero;Nome;Ruolo;Presenze;Punti;2PT_Segnati;2PT_Tentati;3PT_Segnati;3PT_Tentati;TL_Segnati;TL_Tentati;Rimb_Off;Rimb_Dif;Assist;Recuperate;Perse;Stoppate;Falli;Valutazione\n";
       
       const playersToExport = match ? match.players : appState.masterRoster.map(p => createEmptyPlayerStats(p));
       playersToExport.forEach(p => {
         const val = calculateEfficiency(p);
-        csv += `${p.number};"${p.name}";"${p.role}";${p.pts};${p.fg2m};${p.fg2a};${p.fg3m};${p.fg3a};${p.ftm};${p.fta};${p.rebO};${p.rebD};${p.ast};${p.stl};${p.tov};${p.blk};${p.fouls};${val}\n`;
+        const appearances = hasRecordedStats(p) ? 1 : 0;
+        csv += `${p.number};"${p.name}";"${p.role}";${appearances};${p.pts};${p.fg2m};${p.fg2a};${p.fg3m};${p.fg3a};${p.ftm};${p.fta};${p.rebO};${p.rebD};${p.ast};${p.stl};${p.tov};${p.blk};${p.fouls};${val}\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
