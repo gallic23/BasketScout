@@ -3,6 +3,7 @@
        ============================================================== */
     const APP_CONFIG = {
       BACKUP_FILE_NAME: 'BasketScout_Data.json',
+      APP_VERSION: window.BASKETSCOUT_VERSION,
       STORAGE_KEYS: {
         CLIENT_ID: 'basketscout_gdrive_client_id',
         AUTH_TOKEN: 'basketscout_gdrive_token',
@@ -90,6 +91,7 @@
        2. INIZIALIZZAZIONE & SWITCHING TAB NAVIGATION
        ============================================================== */
     window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('appVersion').innerText = `v${APP_CONFIG.APP_VERSION}`;
       loadSavedLocalData();
       syncMasterRosterToActiveMatch();
       initGoogleDriveIntegration();

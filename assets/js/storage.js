@@ -56,7 +56,7 @@
 
     function exportLocalJson() {
       const exportObject = {
-        appVersion: "1.5.0",
+        appVersion: APP_CONFIG.APP_VERSION,
         exportDate: new Date().toISOString(),
         activeMatchId: appState.activeMatchId,
         matches: appState.matches,

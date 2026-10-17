@@ -23,7 +23,7 @@
 <div>
 <div class="flex items-center gap-2">
 <h1 class="text-base sm:text-lg font-black tracking-wider text-white cursor-pointer" onclick="switchTab('livescout')">BASKETSCOUT</h1>
-<span class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-mono">v1.5.0</span>
+<span class="text-[10px] bg-slate-800 border border-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-mono" id="appVersion"></span>
 <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" id="liveStatusBadge">
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIVE
             </span>
@@ -677,6 +677,7 @@
 </div>
 </div>
 <!-- ================= JAVASCRIPT LOGIC ================= -->
+<script src="assets/js/version.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/matches.js"></script>
 <script src="assets/js/live-scout.js"></script>

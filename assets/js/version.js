@@ -1,0 +1,1 @@
+window.BASKETSCOUT_VERSION = '1.5.0';

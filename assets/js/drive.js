@@ -158,7 +158,7 @@
       const payload = {
         updatedAt: new Date().toISOString(),
         device: navigator.userAgent,
-        appVersion: "1.5.0",
+        appVersion: APP_CONFIG.APP_VERSION,
         state: {
           activeMatchId: appState.activeMatchId,
           matches: appState.matches,
