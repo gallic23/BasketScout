@@ -71,7 +71,9 @@
 
           updateDriveUIState(true, appState.cloud.userEmail);
           logSyncMessage(`Autenticazione riuscita: ${appState.cloud.userEmail}`);
-          syncNowToDrive();
+
+          /* Ho disabilitato la sincronizzazione automatica in caso di accesso a drive andata a buon fine */
+          // syncNowToDrive();
         }
       });
 
